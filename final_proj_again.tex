@@ -1,0 +1,2392 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={Final Project - DSApps},
+  pdfauthor={May Ben Hamo},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\usepackage[margin=1.3cm]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{longtable,booktabs}
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{pdfpages}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{colortbl}
+\usepackage{pdflscape}
+\usepackage{tabu}
+\usepackage{threeparttable}
+\usepackage{threeparttablex}
+\usepackage[normalem]{ulem}
+\usepackage{makecell}
+\usepackage{xcolor}
+
+\title{Final Project - DSApps}
+\author{May Ben Hamo}
+\date{2020-08-14}
+
+\begin{document}
+\maketitle
+
+{
+\setcounter{tocdepth}{3}
+\tableofcontents
+}
+\newpage
+
+\hypertarget{exploratory-data-analysis}{%
+\section{Exploratory Data Analysis}\label{exploratory-data-analysis}}
+
+\hypertarget{reading-preparing-the-data}{%
+\subsection{Reading \& Preparing the
+data}\label{reading-preparing-the-data}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{food_train <-}\StringTok{ }\KeywordTok{read.csv}\NormalTok{(}\StringTok{"data/food_train.csv"}\NormalTok{)}
+\NormalTok{food_test <-}\StringTok{ }\KeywordTok{read.csv}\NormalTok{(}\StringTok{"data/food_test.csv"}\NormalTok{)}
+\NormalTok{food_nutrients <-}\StringTok{ }\KeywordTok{read.csv}\NormalTok{(}\StringTok{"data/food_nutrients.csv"}\NormalTok{)}
+\NormalTok{nutrients <-}\StringTok{ }\KeywordTok{read.csv}\NormalTok{(}\StringTok{"data/nutrients.csv"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+For convenient, I'll change the names of the categories only for part A:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{levels}\NormalTok{(food_train}\OperatorTok{$}\NormalTok{category) <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{"cakes"}\NormalTok{,}\StringTok{"candy"}\NormalTok{, }\StringTok{"chips"}\NormalTok{, }\StringTok{"chocolate"}\NormalTok{, }\StringTok{"cookies"}\NormalTok{, }\StringTok{"popcorn"}\NormalTok{ )}
+\end{Highlighting}
+\end{Shaded}
+
+\textbf{Images}\\
+I created a df contain all the img\_path and them merge it to the
+original data (the entire code available at the notebook)
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{food_train_images <-}\StringTok{ }\NormalTok{food_train }\OperatorTok{%>%}\StringTok{ }\KeywordTok{inner_join}\NormalTok{(img_df)}
+\NormalTok{food_test_images <-}\StringTok{ }\NormalTok{food_test }\OperatorTok{%>%}\StringTok{ }\KeywordTok{inner_join}\NormalTok{(img_df_test)}
+\end{Highlighting}
+\end{Shaded}
+
+\textbf{Nutrrients}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{#  create a data frame that unifies all 4 data sets relevant to the train/test set:  }
+\NormalTok{food_train_all <-}\StringTok{ }\NormalTok{food_nutrients }\OperatorTok{%>%}\StringTok{ }\KeywordTok{inner_join}\NormalTok{(food_train) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{inner_join}\NormalTok{(nutrients) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{inner_join}\NormalTok{(img_df)}
+
+\NormalTok{food_test_all <-}\StringTok{ }\NormalTok{food_nutrients }\OperatorTok{%>%}\StringTok{ }\KeywordTok{inner_join}\NormalTok{(food_test) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{inner_join}\NormalTok{(nutrients) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{inner_join}\NormalTok{(img_df_test)}
+\end{Highlighting}
+\end{Shaded}
+
+Add a columne for each of the nutrients, impute 0 if the product doesn't
+contain the nutrient:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{food_train_with_nutrients =}\StringTok{  }\NormalTok{food_nutrients }\OperatorTok{%>%}\StringTok{  }\KeywordTok{left_join}\NormalTok{(food_train , }\DataTypeTok{by =} \StringTok{"idx"}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{pivot_wider}\NormalTok{(}\DataTypeTok{names_from =}\NormalTok{ nutrient_id, }\DataTypeTok{values_from =}\NormalTok{ amount, }\DataTypeTok{names_prefix =} \StringTok{"nutr_"}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{mutate_at}\NormalTok{(}\KeywordTok{vars}\NormalTok{(}\KeywordTok{starts_with}\NormalTok{(}\StringTok{"nutr_"}\NormalTok{)), }\OperatorTok{~}\NormalTok{\{}\KeywordTok{if_else}\NormalTok{(}\KeywordTok{is.na}\NormalTok{(.), }\DecValTok{0}\NormalTok{, .)\}) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{inner_join}\NormalTok{(food_train)}
+
+\NormalTok{food_test_with_nutrients <-}\StringTok{ }\NormalTok{food_nutrients }\OperatorTok{%>%}\StringTok{  }\KeywordTok{left_join}\NormalTok{(food_test , }\DataTypeTok{by =} \StringTok{"idx"}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{pivot_wider}\NormalTok{(}\DataTypeTok{names_from =}\NormalTok{ nutrient_id, }\DataTypeTok{values_from =}\NormalTok{ amount, }\DataTypeTok{names_prefix =} \StringTok{"nutr_"}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{mutate_at}\NormalTok{(}\KeywordTok{vars}\NormalTok{(}\KeywordTok{starts_with}\NormalTok{(}\StringTok{"nutr_"}\NormalTok{)), }\OperatorTok{~}\NormalTok{\{}\KeywordTok{if_else}\NormalTok{(}\KeywordTok{is.na}\NormalTok{(.), }\DecValTok{0}\NormalTok{, .)\}) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{inner_join}\NormalTok{(food_test)}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{quick-view}{%
+\subsection{Quick View}\label{quick-view}}
+
+\hypertarget{main-data}{%
+\subsubsection{Main Data}\label{main-data}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{food_train }\OperatorTok{%>%}\StringTok{ }\KeywordTok{select_if}\NormalTok{(is.numeric) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{skim_without_charts}\NormalTok{() }\OperatorTok{%>%}\StringTok{ }\KeywordTok{as_tibble}\NormalTok{() }\OperatorTok{%>%}\StringTok{ }\KeywordTok{select}\NormalTok{(}\OperatorTok{-}\NormalTok{skim_type) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{rename_at}\NormalTok{(}\KeywordTok{vars}\NormalTok{(}\KeywordTok{starts_with}\NormalTok{(}\StringTok{"numeric"}\NormalTok{)), }\OperatorTok{~}\NormalTok{(}\KeywordTok{str_remove}\NormalTok{(.,}\StringTok{"numeric."}\NormalTok{)))}\OperatorTok{%>%}
+\StringTok{  }\NormalTok{knitr}\OperatorTok{::}\KeywordTok{kable}\NormalTok{(}\DataTypeTok{digits =} \DecValTok{3}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{kable_styling}\NormalTok{(}\DataTypeTok{latex_options =} \KeywordTok{c}\NormalTok{(}\StringTok{"striped"}\NormalTok{), }\DataTypeTok{font_size =}\DecValTok{8}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{table}[H]
+\centering\begingroup\fontsize{8}{10}\selectfont
+
+\begin{tabular}{l|r|r|r|r|r|r|r|r|r}
+\hline
+skim\_variable & n\_missing & complete\_rate & mean & sd & p0 & p25 & p50 & p75 & p100\\
+\hline
+\rowcolor{gray!6}  idx & 0 & 1 & 17633.62 & 10176.708 & 1.000 & 8840.5 & 17615 & 26458.5 & 35276\\
+\hline
+serving\_size & 0 & 1 & 37.64 & 20.942 & 0.225 & 28.0 & 30 & 40.0 & 480\\
+\hline
+\end{tabular}
+\endgroup{}
+\end{table}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{food_train }\OperatorTok{%>%}\StringTok{ }\KeywordTok{select_if}\NormalTok{(is.factor) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{skim}\NormalTok{() }\OperatorTok{%>%}\StringTok{ }\KeywordTok{select}\NormalTok{(}\OperatorTok{-}\NormalTok{factor.ordered, }\OperatorTok{-}\NormalTok{skim_type)  }\OperatorTok{%>%}\StringTok{ }\KeywordTok{as_tibble}\NormalTok{() }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{rename_at}\NormalTok{(}\KeywordTok{vars}\NormalTok{(}\KeywordTok{starts_with}\NormalTok{(}\StringTok{"factor"}\NormalTok{)), }\OperatorTok{~}\NormalTok{(}\KeywordTok{str_remove}\NormalTok{(.,}\StringTok{"factor."}\NormalTok{))) }\OperatorTok{%>%}\StringTok{ }\NormalTok{knitr}\OperatorTok{::}\KeywordTok{kable}\NormalTok{(}\DataTypeTok{digits =}\DecValTok{1}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{kable_styling}\NormalTok{(}\DataTypeTok{latex_options =} \KeywordTok{c}\NormalTok{(}\StringTok{"striped"}\NormalTok{), }\DataTypeTok{font_size =} \DecValTok{8}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{table}[H]
+\centering\begingroup\fontsize{8}{10}\selectfont
+
+\begin{tabular}{l|r|r|r|l}
+\hline
+skim\_variable & n\_missing & complete\_rate & n\_unique & top\_counts\\
+\hline
+\rowcolor{gray!6}  brand & 0 & 1 & 4783 & wal: 579, tar: 540, fer: 506, not: 467\\
+\hline
+description & 0 & 1 & 26200 & coo: 100, mil: 92, pot: 82, dar: 79\\
+\hline
+\rowcolor{gray!6}  ingredients & 40 & 1 & 26872 & alm: 186, wal: 120, pec: 115, cas: 42\\
+\hline
+serving\_size\_unit & 0 & 1 & 2 & g: 31743, ml: 8\\
+\hline
+\rowcolor{gray!6}  household\_serving\_fulltext & 11 & 1 & 2206 & 1 o: 5424, 0.2: 2116, 3 p: 1114, 1 c: 1074\\
+\hline
+category & 0 & 1 & 6 & pop: 7645, can: 7584, coo: 5284, cak: 3786\\
+\hline
+\end{tabular}
+\endgroup{}
+\end{table}
+
+A general summary of the train set can be seen in the table above. How
+many snacks in each category, how many companies there are, how many
+unique values for each factorial variable, etc. Also, it can be seen
+that in the train set there are a total of 11 + 40 missing values for
+two factorial variables. This is a very small number :)
+
+Also, Almost no NA's in the test set:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+ \KeywordTok{miss_var_summary}\NormalTok{(food_test_images }\OperatorTok{%>%}\StringTok{ }\KeywordTok{select_if}\NormalTok{((}\OperatorTok{~}\NormalTok{(}\KeywordTok{sum}\NormalTok{(}\KeywordTok{is.na}\NormalTok{(.)) }\OperatorTok{>}\StringTok{ }\DecValTok{0}\NormalTok{))) ) }
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 2 x 3
+##   variable    n_miss pct_miss
+##   <chr>        <int>    <dbl>
+## 1 ingredients      5   0.142 
+## 2 brand            1   0.0284
+\end{verbatim}
+
+\hypertarget{food-nutrients-nutrients}{%
+\subsubsection{Food nutrients +
+Nutrients}\label{food-nutrients-nutrients}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{glimpse}\NormalTok{(food_train_all }\OperatorTok{%>%}\StringTok{ }\KeywordTok{select}\NormalTok{(nutrient_id,name,unit_name, amount )  )}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Observations: 443,970
+## Variables: 4
+## $ nutrient_id <int> 1087, 1089, 1104, 1162, 1003, 1004, 1005, 1008, 2000, 1...
+## $ name        <fct> "Calcium, Ca", "Iron, Fe", "Vitamin A, IU", "Vitamin C,...
+## $ unit_name   <fct> MG, MG, IU, MG, G, G, G, KCAL, G, G, MG, MG, G, G, G, M...
+## $ amount      <dbl> 143.00, 5.14, 0.00, 0.00, 7.14, 35.71, 53.57, 536.00, 4...
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{food_train_all }\OperatorTok{%>%}\StringTok{ }\KeywordTok{bind_rows}\NormalTok{(food_test_all }\OperatorTok{%>%}\StringTok{ }\KeywordTok{mutate}\NormalTok{(}\StringTok{"category"} \OperatorTok{==}\StringTok{ "test"}\NormalTok{)) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{distinct}\NormalTok{(idx) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{nrow}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 35276
+\end{verbatim}
+
+We have all the observations (train\&test) in the databases of the
+nutrients. (31751 + 3525)
+
+Also, no missing values (train \& test):
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{food_train_all }\OperatorTok{%>%}\StringTok{ }\KeywordTok{bind_rows}\NormalTok{(food_test_all }\OperatorTok{%>%}\StringTok{ }\KeywordTok{mutate}\NormalTok{(}\StringTok{"category"} \OperatorTok{==}\StringTok{ "test"}\NormalTok{)) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{        }\KeywordTok{select}\NormalTok{(unit_name, name, nutrient_id, amount) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{select_if}\NormalTok{((}\OperatorTok{~}\NormalTok{(}\KeywordTok{sum}\NormalTok{(}\KeywordTok{is.na}\NormalTok{(.)) }\OperatorTok{>}\StringTok{ }\DecValTok{0}\NormalTok{)))  }\OperatorTok{%>%}\StringTok{ }\KeywordTok{ncol}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0
+\end{verbatim}
+
+\hypertarget{in-depth-analysis-of-the-fatures}{%
+\subsection{In-Depth Analysis of the
+Fatures}\label{in-depth-analysis-of-the-fatures}}
+
+\textbf{My main goal: investigate in depth the relationship of each of
+the features to the snack's category.}
+
+\hypertarget{household-serving}{%
+\subsubsection{Household Serving}\label{household-serving}}
+
+As we saw in the quick view, we have 11 NA's in the train set, and there
+are 2206 distict values(train). There are a lot of levels, so I will now
+try to create a new feature using \texttt{household\_serving\_fulltext}:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{top_words <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(data, col, }\DataTypeTok{by_category =}\NormalTok{ T) \{ }\CommentTok{# find top words of a col }
+\NormalTok{  data <-}\StringTok{ }\NormalTok{data }\OperatorTok{%>%}\StringTok{ }\KeywordTok{mutate_at}\NormalTok{(\{\{col\}\}, as.character)}
+  \ControlFlowTok{if}\NormalTok{(by_category) data <-}\StringTok{ }\NormalTok{data }\OperatorTok{%>%}\StringTok{ }\KeywordTok{group_by}\NormalTok{(category)  }
+\NormalTok{  data }\OperatorTok{%>%}\StringTok{ }\KeywordTok{unnest_tokens}\NormalTok{(word, \{\{col\}\}) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{anti_join}\NormalTok{(stop_words) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{filter}\NormalTok{(}
+    \OperatorTok{!}\KeywordTok{str_detect}\NormalTok{(word, }\DataTypeTok{pattern =} \StringTok{"[[:digit:]]"}\NormalTok{), }\CommentTok{# removes any words with numeric digits}
+    \OperatorTok{!}\KeywordTok{str_detect}\NormalTok{(word, }\DataTypeTok{pattern =} \StringTok{"[[:punct:]]"}\NormalTok{), }\CommentTok{# removes any remaining punctuations}
+    \OperatorTok{!}\KeywordTok{str_detect}\NormalTok{(word, }\DataTypeTok{pattern =} \StringTok{"(.)}\CharTok{\textbackslash{}\textbackslash{}}\StringTok{1\{2,\}"}\NormalTok{),  }\CommentTok{# removes any words with 3 or more repeated letters}
+    \OperatorTok{!}\KeywordTok{str_detect}\NormalTok{(word, }\DataTypeTok{pattern =} \StringTok{"}\CharTok{\textbackslash{}\textbackslash{}}\StringTok{b(.)}\CharTok{\textbackslash{}\textbackslash{}}\StringTok{b"}\NormalTok{)    }\CommentTok{# removes any remaining single letter words}
+\NormalTok{  ) }\OperatorTok{%>%}\StringTok{  }\KeywordTok{count}\NormalTok{(word, }\DataTypeTok{sort =}\NormalTok{ T)  \}}
+
+\KeywordTok{glimpse}\NormalTok{( }\KeywordTok{top_words}\NormalTok{(food_train, }\StringTok{"household_serving_fulltext"}\NormalTok{, }\DataTypeTok{by_category =}\NormalTok{ F) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{arrange}\NormalTok{(}\OperatorTok{-}\NormalTok{n) )}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Observations: 412
+## Variables: 2
+## $ word <chr> "onz", "pieces", "cup", "cookies", "cookie", "grm", "piece", "...
+## $ n    <int> 7770, 5671, 3483, 2052, 1152, 1110, 852, 821, 748, 732, 693, 5...
+\end{verbatim}
+
+Using the above data, I identified keywords for creating
+\texttt{household\_serving\_update} as follows:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# a list with key and values }
+\NormalTok{key_words_list <-}\StringTok{ }\KeywordTok{list}\NormalTok{(}\StringTok{"cookie"}\NormalTok{ =}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{"cookie"}\NormalTok{, }\StringTok{"cookies"}\NormalTok{, }\StringTok{"coookie"}\NormalTok{, }\StringTok{"brownie"}\NormalTok{, }\StringTok{"brookie"}\NormalTok{, }\StringTok{"macaroon"}\NormalTok{,}\StringTok{"macarons"}\NormalTok{, }\StringTok{"crackers"}\NormalTok{, }\StringTok{"cracker"}\NormalTok{, }\StringTok{"biscuit"}\NormalTok{,}\StringTok{"waf"}\NormalTok{,}
+                           \StringTok{"truffle"}\NormalTok{) ,}
+                   \StringTok{"cake"}\NormalTok{ =}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{"cake"}\NormalTok{, }\StringTok{"cupcake"}\NormalTok{, }\StringTok{"donut"}\NormalTok{, }\StringTok{"danish"}\NormalTok{, }\StringTok{"loaf"}\NormalTok{, }\StringTok{"pastry"}\NormalTok{),}
+                   \StringTok{"pieces"}\NormalTok{ =}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{"piece"}\NormalTok{, }\StringTok{"pieces"}\NormalTok{, }\StringTok{"pcs"}\NormalTok{, }\StringTok{"pcs."}\NormalTok{, }\StringTok{"pc"}\NormalTok{, }\StringTok{"pc."}\NormalTok{, }\StringTok{"psc"}\NormalTok{, }\StringTok{"portion"}\NormalTok{),}
+                   \StringTok{"pie"}\NormalTok{ =}\StringTok{ "pie"}\NormalTok{,  }\StringTok{"onz"}\NormalTok{ =}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{"onz"}\NormalTok{,}\StringTok{"oz"}\NormalTok{),}
+                   \StringTok{"cup"}\NormalTok{ =}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{"cup"}\NormalTok{, }\StringTok{"cups"}\NormalTok{),  }\StringTok{"bar"}\NormalTok{ =}\StringTok{ "bar"}\NormalTok{ , }\StringTok{"slice"}\NormalTok{ =}\StringTok{ "slice"}\NormalTok{,}
+                   \StringTok{"package"}\NormalTok{ =}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{"package"}\NormalTok{, }\StringTok{"pack"}\NormalTok{, }\StringTok{"pkg"}\NormalTok{ , }\StringTok{"pk"}\NormalTok{, }\StringTok{"box"}\NormalTok{, }\StringTok{"pkg."}\NormalTok{,}\StringTok{"kit"}\NormalTok{ ),}
+                   \StringTok{"lollipop"}\NormalTok{ =}\StringTok{  }\KeywordTok{c}\NormalTok{(}\StringTok{"lol"}\NormalTok{, }\StringTok{"pop"}\NormalTok{), }\StringTok{"bag"}\NormalTok{ =}\StringTok{ "bag"}\NormalTok{, }\StringTok{"grm"}\NormalTok{ =}\StringTok{"grm"}\NormalTok{ ,}
+                   \StringTok{"container"}\NormalTok{ =}\StringTok{ "container"}\NormalTok{,  }\StringTok{"pretzel"}\NormalTok{ =}\StringTok{"pretzel"}\NormalTok{, }\StringTok{"squares"}\NormalTok{ =}\StringTok{"square"}\NormalTok{ ,}
+                   \StringTok{"tbsp"}\NormalTok{ =}\KeywordTok{c}\NormalTok{(}\StringTok{"tbsp"}\NormalTok{, }\StringTok{"tsp"}\NormalTok{),  }\StringTok{"chips"}\NormalTok{ =}\KeywordTok{c}\NormalTok{(}\StringTok{"chip"}\NormalTok{,}\StringTok{"crisps"}\NormalTok{), }\StringTok{"balls"}\NormalTok{ =}\StringTok{ "ball"}\NormalTok{,}
+                   \StringTok{"section"}\NormalTok{ =}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{"section"}\NormalTok{, }\StringTok{"block"}\NormalTok{) , }\StringTok{"candy"}\NormalTok{ =}\StringTok{ "cand"}\NormalTok{,    }\StringTok{"egg"}\NormalTok{=}\StringTok{ "egg"}\NormalTok{,}
+                   \StringTok{"sticks"}\NormalTok{=}\StringTok{"stick"}\NormalTok{ ,   }\StringTok{"kernels"}\NormalTok{ =}\StringTok{"kernel"}\NormalTok{ , }\StringTok{"pouch"}\NormalTok{ =}\StringTok{ "pouch"}\NormalTok{,   }\StringTok{"roll"}\NormalTok{ =}\StringTok{ "roll"}\NormalTok{)}
+\NormalTok{keywords_fun <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(words) }\KeywordTok{str_c}\NormalTok{(words, }\DataTypeTok{collapse =} \StringTok{"|"}\NormalTok{)}
+\NormalTok{key_words_list <-}\StringTok{ }\KeywordTok{lapply}\NormalTok{(key_words_list, keywords_fun)}
+\end{Highlighting}
+\end{Shaded}
+
+I created a function: \texttt{household\_serving\_update\_fun} that
+classify each of the words in \texttt{household\_serving\_fulltext}
+according to \texttt{key\_words\_list} (The code is long so you can see
+it in the notebook)
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{datafulltext <-}\StringTok{ }\KeywordTok{household_serving_update_fun}\NormalTok{(food_train,household_serving_fulltext, key_words_list )}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{cat}\NormalTok{(}\StringTok{"There are only"}\NormalTok{, datafulltext }\OperatorTok{%>%}\StringTok{ }\KeywordTok{select}\NormalTok{(household_serving_update) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{n_distinct}\NormalTok{(), }\StringTok{"levels in the new feature"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## There are only 26 levels in the new feature
+\end{verbatim}
+
+How many products do we have in each of the keys I created? (I will show
+the 15 top levels)
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# d_cat -  no. of distinct categories contains products with this key}
+\NormalTok{data2_fulltext <-}\StringTok{ }\NormalTok{datafulltext }\OperatorTok{%>%}\StringTok{ }\KeywordTok{group_by}\NormalTok{(household_serving_update) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{d_cat =} \KeywordTok{n_distinct}\NormalTok{(category), }\DataTypeTok{n=}\KeywordTok{n}\NormalTok{()) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{arrange}\NormalTok{(}\OperatorTok{-}\NormalTok{n) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{head}\NormalTok{(}\DecValTok{15}\NormalTok{)}
+\KeywordTok{kable}\NormalTok{(}\KeywordTok{t}\NormalTok{( data2_fulltext }\OperatorTok{%>%}\StringTok{ }\KeywordTok{rename}\NormalTok{(}\StringTok{"key"}\NormalTok{=household_serving_update )), }\StringTok{"latex"}\NormalTok{, }\DataTypeTok{booktabs =}\NormalTok{ T) }\OperatorTok{%>%}
+\StringTok{   }\KeywordTok{kable_styling}\NormalTok{(}\DataTypeTok{latex_options =} \KeywordTok{c}\NormalTok{(}\StringTok{"striped"}\NormalTok{), }\DataTypeTok{font_size =} \DecValTok{8}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{table}[H]
+\centering\begingroup\fontsize{8}{10}\selectfont
+
+\begin{tabular}{llllllllllllllll}
+\toprule
+\rowcolor{gray!6}  key & onz & pieces & cookie & cup & cake & package & grm & bar & other & tbsp & slice & chips & pouch & pie & lollipop\\
+d\_cat & 6 & 6 & 6 & 6 & 5 & 6 & 6 & 6 & 6 & 6 & 5 & 4 & 6 & 5 & 4\\
+\rowcolor{gray!6}  n & 7788 & 7381 & 3908 & 3548 & 1404 & 1184 & 1110 & 892 & 831 & 622 & 418 & 343 & 336 & 326 & 314\\
+\bottomrule
+\end{tabular}
+\endgroup{}
+\end{table}
+
+Let's look at the distribution of the keywords by each of the categories
+(filter: keywords that appear at least 200 times):
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{entropy_fun <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(vec) }\OperatorTok{-}\KeywordTok{sum}\NormalTok{(vec[vec}\OperatorTok{>}\DecValTok{0}\NormalTok{]}\OperatorTok{*}\KeywordTok{log}\NormalTok{(vec[vec}\OperatorTok{>}\DecValTok{0}\NormalTok{]) )}
+\NormalTok{data_plot_fulltext <-}\StringTok{ }\NormalTok{datafulltext }\OperatorTok{%>%}\StringTok{ }\KeywordTok{group_by}\NormalTok{(household_serving_update, category) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{count}\NormalTok{(}\DataTypeTok{sort=}\NormalTok{T) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{group_by}\NormalTok{(household_serving_update) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{n=}\NormalTok{ n, }\DataTypeTok{sum_n =} \KeywordTok{sum}\NormalTok{(n), }\DataTypeTok{pct =}\NormalTok{ n}\OperatorTok{/}\KeywordTok{sum}\NormalTok{(n), }\DataTypeTok{entropy =} \KeywordTok{entropy_fun}\NormalTok{(pct) )}
+
+\NormalTok{data_plot_fulltext }\OperatorTok{%>%}\StringTok{ }\KeywordTok{filter}\NormalTok{(sum_n}\OperatorTok{>}\DecValTok{200}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{ggplot}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x =}\KeywordTok{reorder}\NormalTok{(household_serving_update, }\OperatorTok{-}\NormalTok{sum_n), }\DataTypeTok{y =}\NormalTok{ n , }\DataTypeTok{fill =}\NormalTok{ household_serving_update ))  }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_bar}\NormalTok{(}\DataTypeTok{stat =} \StringTok{"identity"}\NormalTok{, }\DataTypeTok{alpha =} \FloatTok{0.5}\NormalTok{) }\OperatorTok{+}\StringTok{  }\KeywordTok{facet_grid}\NormalTok{(category}\OperatorTok{~}\NormalTok{., }\DataTypeTok{scales =} \StringTok{"free_y"}\NormalTok{) }\OperatorTok{+}\StringTok{ }\KeywordTok{theme_bw}\NormalTok{() }\OperatorTok{+}
+\StringTok{  }\KeywordTok{theme}\NormalTok{(}\DataTypeTok{axis.text.x =} \KeywordTok{element_text}\NormalTok{(}\DataTypeTok{angle=}\DecValTok{20}\NormalTok{, }\DataTypeTok{hjust=}\DecValTok{1}\NormalTok{),}
+        \DataTypeTok{text =} \KeywordTok{element_text}\NormalTok{(}\DataTypeTok{size=}\DecValTok{10}\NormalTok{),}\DataTypeTok{legend.position =} \StringTok{""}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{labs}\NormalTok{(}\DataTypeTok{x=} \StringTok{""}\NormalTok{, }\DataTypeTok{y =} \StringTok{"Number of Products"}\NormalTok{, }\DataTypeTok{title =} \StringTok{"Household Serving by Category & Keywords"}\NormalTok{) }
+\end{Highlighting}
+\end{Shaded}
+
+\begin{center}\includegraphics[width=0.7\linewidth]{final_proj_again_files/figure-latex/unnamed-chunk-24-1} \end{center}
+
+Some keys are very popular in each of the categories, while some
+categories have one key that is very popular - like candy (pieces)
+,chips (onz) and cookies (cookie). Also, there are categories that have
+many popular key like popcorn (onz, cup).
+
+Let's have a second look and focus on the distribution of the category
+for each keyword - I'll compute the pct of each word for each of the
+categories and also the \textbf{entropy}. (Entropy is a measure of the
+impurity of the distribution of the categories for each word. As the
+entropy gets smaller, it means that the word is more ``pure'', and thus
+it might be good for prediction. (I'll explain it later - in the
+modeling stage - page \textbf{22})
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{fulltext_plotly <-}\StringTok{ }\NormalTok{data_plot_fulltext  }\OperatorTok{%>%}\StringTok{ }\KeywordTok{mutate}\NormalTok{( }\DataTypeTok{pct =} \KeywordTok{paste0}\NormalTok{((}\KeywordTok{round}\NormalTok{(n}\OperatorTok{/}\KeywordTok{sum}\NormalTok{(n)}\OperatorTok{*}\DecValTok{100}\NormalTok{, }\DecValTok{2}\NormalTok{)),}\StringTok{" %"}\NormalTok{)) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{ggplot}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x =}\KeywordTok{reorder}\NormalTok{(household_serving_update, }\OperatorTok{-}\NormalTok{entropy), }\DataTypeTok{y =}\NormalTok{ n , }\DataTypeTok{fill =}\NormalTok{ category ,}
+             \DataTypeTok{text =} \KeywordTok{paste}\NormalTok{( }\StringTok{"Houshold serving:"}\NormalTok{, household_serving_update,}\StringTok{"}\CharTok{\textbackslash{}n}\StringTok{ Category:"}\NormalTok{, category,}\StringTok{"}\CharTok{\textbackslash{}n}\StringTok{ Count"}\NormalTok{, n, }\StringTok{"}\CharTok{\textbackslash{}n}\StringTok{ Percentage"}\NormalTok{, pct,}
+                           \StringTok{"}\CharTok{\textbackslash{}n}\StringTok{ Total n"}\NormalTok{, sum_n , }\StringTok{"}\CharTok{\textbackslash{}n}\StringTok{ Entropy"}\NormalTok{ , }\KeywordTok{round}\NormalTok{(entropy,}\DecValTok{2}\NormalTok{) )))  }\OperatorTok{+}
+\StringTok{ }\KeywordTok{geom_col}\NormalTok{(}\DataTypeTok{position =} \StringTok{"fill"}\NormalTok{, }\DataTypeTok{color =} \StringTok{"white"}\NormalTok{, }\DataTypeTok{size =} \FloatTok{.3}\NormalTok{)  }\OperatorTok{+}\StringTok{ }\KeywordTok{coord_flip}\NormalTok{() }\OperatorTok{+}\StringTok{  }\KeywordTok{theme_light}\NormalTok{() }\OperatorTok{+}\StringTok{ }\KeywordTok{theme}\NormalTok{(}\DataTypeTok{text =} \KeywordTok{element_text}\NormalTok{(}\DataTypeTok{size=}\DecValTok{10}\NormalTok{))  }\OperatorTok{+}
+\StringTok{  }\KeywordTok{labs}\NormalTok{(}\DataTypeTok{x=}\StringTok{""}\NormalTok{, }\DataTypeTok{y=}\StringTok{""}\NormalTok{, }\DataTypeTok{title =} \StringTok{"Keywords by Category"}\NormalTok{, }\DataTypeTok{subtitle =} \StringTok{"Ordered by Entropy (ascending)"}\NormalTok{)  }\OperatorTok{+}
+\StringTok{  }\KeywordTok{scale_y_continuous}\NormalTok{(}\DataTypeTok{labels =}\NormalTok{ percent) }
+\NormalTok{fulltext_plotly}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{center}\includegraphics{final_proj_again_files/figure-latex/unnamed-chunk-25-1} \end{center}
+
+\textcolor{red}{For interactive plot - See html file}\\
+There are keywords that are very common only in one category (kernels,
+cakes, pie, etc), while there are keywords that are common in many
+categories like onz, grm. We even have one key (kernels) that appears
+only in the one category(popcorn), but it contains only 25 obs and I may
+drop it later. \textbf{In conclusion, it seems like a very good feature
+to work with.}
+
+\hypertarget{ingredients}{%
+\subsubsection{Ingredients}\label{ingredients}}
+
+As we saw in the quick view, we have 40 NA's in the train set and 5 in
+the test set, and there are 26872 distict values(train).
+
+Let's find out which are the most common ingredients in each of the
+categories.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# flat_fun -  input: list of words,  output: one string contains all the words, separate by ","}
+\NormalTok{flat_fun <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(list)  }\KeywordTok{str_flatten}\NormalTok{(}\KeywordTok{unlist}\NormalTok{(list) , }\DataTypeTok{collapse =} \StringTok{","}\NormalTok{) }
+\CommentTok{# a function to split & clean the ingredients. output: ingredients split by ","}
+\NormalTok{split_by_ingredient <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(data) \{}
+\NormalTok{  data }\OperatorTok{%>%}\StringTok{ }
+\StringTok{    }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{new_ingredient =} \KeywordTok{str_replace_all}\NormalTok{(ingredients,  }\StringTok{"}\CharTok{\textbackslash{}\textbackslash{}}\StringTok{s*[.,]}\CharTok{\textbackslash{}\textbackslash{}}\StringTok{s*$"}\NormalTok{, }\StringTok{""}\NormalTok{)) }\OperatorTok{%>%}\StringTok{ }\CommentTok{# if the last char is , or . - remove it  and remove unnecessary spaces}
+\StringTok{    }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{new_ingredient =} \KeywordTok{str_replace_all}\NormalTok{(new_ingredient,  }\StringTok{"}\CharTok{\textbackslash{}\textbackslash{}}\StringTok{s*[$+*]}\CharTok{\textbackslash{}\textbackslash{}}\StringTok{s*"}\NormalTok{, }\StringTok{""}\NormalTok{)) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{    }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{new_ingredient =} \KeywordTok{str_replace_all}\NormalTok{(new_ingredient,  }\StringTok{"}\CharTok{\textbackslash{}\textbackslash{}}\StringTok{s*and/or}\CharTok{\textbackslash{}\textbackslash{}}\StringTok{s*"}\NormalTok{, }\StringTok{","}\NormalTok{)) }\OperatorTok{%>%}\StringTok{ }\CommentTok{# drop and/or}
+\StringTok{    }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{new_ingredient =} \KeywordTok{str_replace_all}\NormalTok{(new_ingredient,  }\StringTok{",}\CharTok{\textbackslash{}\textbackslash{}}\StringTok{s*and}\CharTok{\textbackslash{}\textbackslash{}}\StringTok{s*"}\NormalTok{, }\StringTok{","}\NormalTok{)) }\OperatorTok{%>%}\StringTok{ }\CommentTok{# drop and if it is in the beggining of the expression}
+\StringTok{    }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{new_ingredient =} \KeywordTok{str_replace_all}\NormalTok{(new_ingredient,  }\StringTok{"}\CharTok{\textbackslash{}\textbackslash{}}\StringTok{s+[,.()}\CharTok{\textbackslash{}\textbackslash{}}\StringTok{[}\CharTok{\textbackslash{}\textbackslash{}}\StringTok{]\{\}]+an}\CharTok{\textbackslash{}\textbackslash{}}\StringTok{s+"}\NormalTok{, }\StringTok{","}\NormalTok{)) }\OperatorTok{%>%}\StringTok{ }\CommentTok{# replace by ","}
+\StringTok{    }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{new_ingredient=} \KeywordTok{str_split}\NormalTok{(new_ingredient, }\StringTok{"}\CharTok{\textbackslash{}\textbackslash{}}\StringTok{s*[&,.:()}\CharTok{\textbackslash{}\textbackslash{}}\StringTok{[}\CharTok{\textbackslash{}\textbackslash{}}\StringTok{]\{\}]+}\CharTok{\textbackslash{}\textbackslash{}}\StringTok{s*"}\NormalTok{) ) }\OperatorTok{%>%}\StringTok{ }\CommentTok{# split by ,.() and remove unnecessary spaces}
+\StringTok{    }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{new_ingredient =}  \KeywordTok{map}\NormalTok{(new_ingredient, }\ControlFlowTok{function}\NormalTok{(vec) \{}\KeywordTok{stri_remove_empty}\NormalTok{(}\KeywordTok{unique}\NormalTok{(vec))\}) ) }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{new_ingredient =} \KeywordTok{map_chr}\NormalTok{(}\DataTypeTok{.x =}\NormalTok{ new_ingredient ,}\DataTypeTok{.f =}\NormalTok{ flat_fun))}
+\NormalTok{\}}
+\NormalTok{ingredients_data_train <-}\StringTok{ }\KeywordTok{split_by_ingredient}\NormalTok{(food_train) ; ingredients_data_test <-}\StringTok{ }\KeywordTok{split_by_ingredient}\NormalTok{(food_test)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# a function to find n top ingredients (by category)}
+\NormalTok{n_top_ingredient <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(data,num, }\DataTypeTok{by_category =} \OtherTok{TRUE}\NormalTok{) \{}
+\NormalTok{  data <-}\StringTok{ }\NormalTok{data }\OperatorTok{%>%}\StringTok{ }\KeywordTok{select}\NormalTok{(new_ingredient, category) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{unnest_tokens}\NormalTok{(word, new_ingredient, }\DataTypeTok{token =}\NormalTok{ stringr}\OperatorTok{::}\NormalTok{str_split , }\DataTypeTok{pattern =} \StringTok{","}\NormalTok{) }\CommentTok{# split words by ","}
+  \ControlFlowTok{if}\NormalTok{(by_category)  data <-}\StringTok{ }\NormalTok{data }\OperatorTok{%>%}\StringTok{  }\KeywordTok{group_by}\NormalTok{(category) }\CommentTok{# optional to fint top ingredients it by category}
+\NormalTok{  data }\OperatorTok{%>%}\StringTok{ }\KeywordTok{count}\NormalTok{(word, }\DataTypeTok{sort =} \OtherTok{TRUE}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{rename}\NormalTok{(}\DataTypeTok{ingredient =}\NormalTok{ word) }\OperatorTok{%>%}\StringTok{ }\NormalTok{dplyr}\OperatorTok{::}\KeywordTok{slice}\NormalTok{(}\DecValTok{1}\OperatorTok{:}\NormalTok{num)         \}}
+\NormalTok{top_}\DecValTok{12}\NormalTok{_ing <-}\StringTok{ }\KeywordTok{n_top_ingredient}\NormalTok{(ingredients_data_train, }\DecValTok{12}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+Let's take a look at top 10 ingredients in general(NOT by category):
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{kable}\NormalTok{(}\KeywordTok{t}\NormalTok{( }\KeywordTok{n_top_ingredient}\NormalTok{(ingredients_data_train, }\DecValTok{12}\NormalTok{, }\DataTypeTok{by_category =}\NormalTok{ F) ), }\StringTok{"latex"}\NormalTok{, }\DataTypeTok{booktabs =}\NormalTok{ T) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{kable_styling}\NormalTok{(}\DataTypeTok{latex_options =} \KeywordTok{c}\NormalTok{(}\StringTok{"striped"}\NormalTok{,  }\StringTok{"scale_down"}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{table}[H]
+\centering
+\resizebox{\linewidth}{!}{
+\begin{tabular}{lllllllllllll}
+\toprule
+\rowcolor{gray!6}  ingredient & sugar & salt & soy lecithin & corn syrup & citric acid & water & folic acid & niacin & riboflavin & cocoa butter & wheat flour & reduced iron\\
+n & 21464 & 17315 & 11055 & 9977 & 7877 & 6905 & 6884 & 6832 & 6787 & 6719 & 6705 & 5658\\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+Now, I want to look at the top 12 ingredients by category. For each
+ingredient out of top 12 of each category - How many distinct categories
+contain it in the top 12?
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{data_plot_}\DecValTok{12}\NormalTok{_ing <-}\StringTok{ }\NormalTok{top_}\DecValTok{12}\NormalTok{_ing }\OperatorTok{%>%}\StringTok{ }\KeywordTok{group_by}\NormalTok{(ingredient) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{summarize}\NormalTok{(}\DataTypeTok{total_category =} \KeywordTok{n_distinct}\NormalTok{(category), }\DataTypeTok{n=}\KeywordTok{n}\NormalTok{(), }\DataTypeTok{categories =} \KeywordTok{str_flatten}\NormalTok{(}\KeywordTok{unique}\NormalTok{(category), }\DataTypeTok{collapse =} \StringTok{", "}\NormalTok{))}
+\NormalTok{data_plot_}\DecValTok{12}\NormalTok{_ing }\OperatorTok{%>%}\StringTok{  }\KeywordTok{ggplot}\NormalTok{( }\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x=}\NormalTok{ total_category)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_bar}\NormalTok{( }\DataTypeTok{stat=}\StringTok{"count"}\NormalTok{, }\DataTypeTok{fill=}\StringTok{"#f68060"}\NormalTok{, }\DataTypeTok{alpha=}\NormalTok{.}\DecValTok{6}\NormalTok{, }\DataTypeTok{width=}\NormalTok{.}\DecValTok{5}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_text}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{label =}\NormalTok{ ..count..), }\DataTypeTok{stat=} \StringTok{"count"}\NormalTok{, }\DataTypeTok{hjust =} \FloatTok{+1.5}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{coord_flip}\NormalTok{() }\OperatorTok{+}\StringTok{ }\KeywordTok{theme_bw}\NormalTok{()}\OperatorTok{+}\StringTok{  }\KeywordTok{scale_x_continuous}\NormalTok{( }\DataTypeTok{breaks =} \DecValTok{1}\OperatorTok{:}\DecValTok{6}\NormalTok{ ) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{labs}\NormalTok{(}\DataTypeTok{x =} \StringTok{"No. of Categories"}\NormalTok{, }\DataTypeTok{y=} \StringTok{"No. of Top Ingredients"}\NormalTok{, }\DataTypeTok{title =} \StringTok{"No. of Categories Contains the Top 12 Ingredients by Category"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{center}\includegraphics[width=0.5\linewidth]{final_proj_again_files/figure-latex/unnamed-chunk-30-1} \end{center}
+
+Most of the top ingredients by category appears only in 1 category,
+while just 3 of them appears in more than 3 categories:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{data_plot_}\DecValTok{12}\NormalTok{_ing }\OperatorTok{%>%}\StringTok{ }\KeywordTok{filter}\NormalTok{(n}\OperatorTok{>}\DecValTok{3}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{select}\NormalTok{(ingredient,n,categories) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{arrange}\NormalTok{(}\OperatorTok{-}\NormalTok{n)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 3 x 3
+##   ingredient       n categories                                      
+##   <chr>        <int> <chr>                                           
+## 1 salt             6 cakes, candy, chips, chocolate, cookies, popcorn
+## 2 sugar            6 cakes, candy, chips, chocolate, cookies, popcorn
+## 3 soy lecithin     5 cakes, candy, chocolate, cookies, popcorn
+\end{verbatim}
+
+Let's look at all the top 12 ingredient by category:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{top_}\DecValTok{12}\NormalTok{_ing }\OperatorTok{%>%}\StringTok{ }\KeywordTok{ggplot}\NormalTok{( }\KeywordTok{aes}\NormalTok{(}\DataTypeTok{area =}\NormalTok{ n , }\DataTypeTok{fill =}\NormalTok{ category , }\DataTypeTok{label =}\NormalTok{  ingredient, }\DataTypeTok{subgroup =}\NormalTok{ category)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{scale_fill_brewer}\NormalTok{(}\DataTypeTok{palette =} \StringTok{"Dark2"}\NormalTok{) }\OperatorTok{+}\StringTok{ }
+\StringTok{  }\KeywordTok{geom_treemap}\NormalTok{() }\OperatorTok{+}\StringTok{ }\KeywordTok{geom_treemap_subgroup_border}\NormalTok{(}\DataTypeTok{colour =} \StringTok{"white"}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_treemap_subgroup_text}\NormalTok{(}\DataTypeTok{place =} \StringTok{"centre"}\NormalTok{, }\DataTypeTok{grow =}\NormalTok{ T, }\DataTypeTok{reflow =}\NormalTok{ T, }\DataTypeTok{alpha =} \FloatTok{0.5}\NormalTok{, }\DataTypeTok{colour =} \StringTok{"white"}\NormalTok{,}\DataTypeTok{family=}\StringTok{"sans"}\NormalTok{, }\DataTypeTok{angle =} \DecValTok{5}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_treemap_text}\NormalTok{(}\DataTypeTok{family =} \StringTok{"sans"}\NormalTok{, }\DataTypeTok{colour =} \StringTok{"white"}\NormalTok{, }\DataTypeTok{place =} \StringTok{"centre"}\NormalTok{, }\DataTypeTok{reflow =}\NormalTok{ T, }\DataTypeTok{grow =}\NormalTok{ T) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{labs}\NormalTok{(}\DataTypeTok{x =} \StringTok{"Area - Count of Products Contains the Ingredient"}\NormalTok{, }\DataTypeTok{y =} \StringTok{""}\NormalTok{, }\DataTypeTok{title=}\StringTok{"Top 12 Ingredients by Category"}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{theme_bw}\NormalTok{() }\OperatorTok{+}\StringTok{  }\KeywordTok{theme}\NormalTok{(}\DataTypeTok{text =} \KeywordTok{element_text}\NormalTok{(}\DataTypeTok{family =} \StringTok{"sans"}\NormalTok{), }\DataTypeTok{axis.text =} \KeywordTok{element_text}\NormalTok{(}\DataTypeTok{size =} \DecValTok{12}\NormalTok{),}
+        \DataTypeTok{plot.title =} \KeywordTok{element_text}\NormalTok{(}\DataTypeTok{size =} \DecValTok{15}\NormalTok{), }\DataTypeTok{legend.position =} \StringTok{""}\NormalTok{) }
+\end{Highlighting}
+\end{Shaded}
+
+\begin{center}\includegraphics{final_proj_again_files/figure-latex/unnamed-chunk-32-1} \end{center}
+
+makes sense.
+
+Let's take a look at the heatmap of the top ingredients in general
+appear at least 3000 times:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ingredients_plotly <-}\StringTok{ }\KeywordTok{n_top_ingredient}\NormalTok{(ingredients_data_train, }\DecValTok{1000}\NormalTok{)  }\OperatorTok{%>%}\StringTok{ }\KeywordTok{group_by}\NormalTok{(ingredient) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{pct =} \KeywordTok{paste0}\NormalTok{((}\KeywordTok{round}\NormalTok{(n}\OperatorTok{/}\KeywordTok{sum}\NormalTok{(n)}\OperatorTok{*}\DecValTok{100}\NormalTok{, }\DecValTok{2}\NormalTok{)),}\StringTok{" %"}\NormalTok{) ,}\DataTypeTok{sum_n =} \KeywordTok{sum}\NormalTok{(n)) }\OperatorTok{%>%}\StringTok{  }\KeywordTok{filter}\NormalTok{(sum_n}\OperatorTok{>}\DecValTok{3000}\NormalTok{)  }\OperatorTok{%>%}\StringTok{  }
+\StringTok{  }\KeywordTok{ggplot}\NormalTok{(}\KeywordTok{aes}\NormalTok{(category,}\KeywordTok{reorder}\NormalTok{(ingredient, sum_n)  ,}\DataTypeTok{fill=}\NormalTok{ n,}
+             \DataTypeTok{text =} \KeywordTok{paste}\NormalTok{(}\StringTok{"Ingredient: "}\NormalTok{ , ingredient , }\StringTok{"}\CharTok{\textbackslash{}n}\StringTok{ Category: "}\NormalTok{ ,category, }\StringTok{"}\CharTok{\textbackslash{}n}\StringTok{ Count: "}\NormalTok{, n, }\StringTok{"}\CharTok{\textbackslash{}n}\StringTok{ Pct: "}\NormalTok{ , pct, }\StringTok{"}\CharTok{\textbackslash{}n}\StringTok{ Total: "}\NormalTok{ , sum_n ))) }\OperatorTok{+}\StringTok{ }
+\StringTok{  }\KeywordTok{scale_fill_gradient2}\NormalTok{(}\DataTypeTok{low =} \StringTok{"#F9EBEA"}\NormalTok{, }\DataTypeTok{mid =} \StringTok{"#CD6155"}\NormalTok{, }\DataTypeTok{high =} \StringTok{"#922B21"}\NormalTok{, }\DataTypeTok{midpoint =} \DecValTok{3000}\NormalTok{) }\OperatorTok{+}\StringTok{ }
+\StringTok{  }\KeywordTok{geom_tile}\NormalTok{( ) }\OperatorTok{+}\StringTok{ }\KeywordTok{labs}\NormalTok{(}\DataTypeTok{x=}\StringTok{""}\NormalTok{, }\DataTypeTok{y=}\StringTok{""}\NormalTok{, }\DataTypeTok{title =} \StringTok{"Top Ingredients by Category"}\NormalTok{,}
+       \DataTypeTok{subtitle =} \StringTok{"Color by Count of Products Contain the Ingredient"}\NormalTok{) }\OperatorTok{+}\StringTok{ }
+\StringTok{  }\KeywordTok{theme_bw}\NormalTok{() }\OperatorTok{+}\StringTok{  }\KeywordTok{theme}\NormalTok{(}\DataTypeTok{axis.text =} \KeywordTok{element_text}\NormalTok{(}\DataTypeTok{size =} \DecValTok{8}\NormalTok{))}
+\NormalTok{ingredients_plotly}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{center}\includegraphics[width=0.75\linewidth]{final_proj_again_files/figure-latex/unnamed-chunk-33-1} \end{center}
+
+\textcolor{red}{For interactive plot - See html file}
+
+\textbf{Ingredient Score} - I want to take it one step further and try
+to think of a nice feature that can be taken out of the ingerdient
+variable. For example - calculate for each observation - how many of the
+12 popular ingredients by category it contains, and according to this
+calculate a score for each category. Thus, I will receive for each obs.
+- a score to belong to each of the categories.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# a function to compute the score by category for a product}
+\CommentTok{# I did a change in score function later, But I leave it that way }
+\CommentTok{# so that it will be reproducible. (I will discuss this later) }
+\NormalTok{score_fixed <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(vec1, ings) }\KeywordTok{sum}\NormalTok{(}\KeywordTok{str_detect}\NormalTok{(ings, vec1)) }\OperatorTok{/}\StringTok{ }\KeywordTok{length}\NormalTok{(vec1)}
+
+\NormalTok{score_by_cat_fixed <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(top_by_category, product) \{}
+  \ControlFlowTok{if}\NormalTok{(}\KeywordTok{is.na}\NormalTok{(product)) }\KeywordTok{return}\NormalTok{(}\KeywordTok{rep}\NormalTok{(}\OtherTok{NA}\NormalTok{,}\DecValTok{6}\NormalTok{)) }\CommentTok{#I will ignore NA's.}
+  \KeywordTok{apply}\NormalTok{(}\DataTypeTok{X =}\NormalTok{ top_by_category , }\DataTypeTok{MARGIN =} \DecValTok{2}\NormalTok{, }\DataTypeTok{FUN =}\NormalTok{ score_fixed, }\DataTypeTok{ings =}\NormalTok{ product )}
+\NormalTok{\}}
+\CommentTok{# input: df and n , output: df with the scores for each of the categories}
+\NormalTok{create_scores <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(data,n) \{}
+\NormalTok{  top_n_ing <-}\StringTok{ }\KeywordTok{n_top_ingredient}\NormalTok{(data, n)}
+\NormalTok{  top_n_ing_by_category <-}\StringTok{  }\KeywordTok{data.frame}\NormalTok{( }\KeywordTok{tapply}\NormalTok{(top_n_ing}\OperatorTok{$}\NormalTok{ingredient, top_n_ing}\OperatorTok{$}\NormalTok{category, list))}
+  \KeywordTok{as_tibble}\NormalTok{(}\KeywordTok{t}\NormalTok{(}\KeywordTok{map_dfc}\NormalTok{( data}\OperatorTok{$}\NormalTok{new_ingredient, }\DataTypeTok{.f =}\NormalTok{ score_by_cat_fixed, }\DataTypeTok{top_by_category =}\NormalTok{top_n_ing_by_category ))) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{set_names}\NormalTok{(}\KeywordTok{names}\NormalTok{(top_n_ing_by_category))  }\OperatorTok{%>%}\StringTok{ }\KeywordTok{rename_all}\NormalTok{(}\OperatorTok{~}\NormalTok{(}\KeywordTok{paste0}\NormalTok{(}\StringTok{"score_"}\NormalTok{, \{\{n\}\}, }\StringTok{"_"}\NormalTok{ , .))) }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{category =}\NormalTok{ data}\OperatorTok{$}\NormalTok{category, }\DataTypeTok{idx =}\NormalTok{ data}\OperatorTok{$}\NormalTok{idx) \}}
+\NormalTok{ingredient_score_}\DecValTok{12}\NormalTok{ <-}\StringTok{  }\KeywordTok{create_scores}\NormalTok{(ingredients_data_train,}\DecValTok{12}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{kable}\NormalTok{(ingredient_score_}\DecValTok{12} \OperatorTok{%>%}\StringTok{ }\KeywordTok{group_by}\NormalTok{(category) }\OperatorTok{%>%}\StringTok{ }\NormalTok{dplyr}\OperatorTok{::}\KeywordTok{slice}\NormalTok{(}\DecValTok{1}\NormalTok{) }\OperatorTok{%>%}\StringTok{  }\KeywordTok{head}\NormalTok{(}\DecValTok{2}\NormalTok{), }\StringTok{"latex"}\NormalTok{, }\DataTypeTok{booktabs =}\NormalTok{ T,  }\DataTypeTok{digits =} \DecValTok{4}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{kable_styling}\NormalTok{(}\DataTypeTok{latex_options =} \KeywordTok{c}\NormalTok{(}\StringTok{"striped"}\NormalTok{), , }\DataTypeTok{font_size =} \DecValTok{8}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{table}[H]
+\centering\begingroup\fontsize{8}{10}\selectfont
+
+\begin{tabular}{rrrrrrlr}
+\toprule
+score\_12\_cakes & score\_12\_candy & score\_12\_chips & score\_12\_chocolate & score\_12\_cookies & score\_12\_popcorn & category & idx\\
+\midrule
+\rowcolor{gray!6}  0.7500 & 0.3333 & 0.3333 & 0.4167 & 0.7500 & 0.2500 & cakes & 9\\
+0.3333 & 0.6667 & 0.2500 & 0.4167 & 0.3333 & 0.3333 & candy & 10\\
+\bottomrule
+\end{tabular}
+\endgroup{}
+\end{table}
+
+For example - the first obs. belongs to the cakes category, and its
+highest scores is for cookies/cakes. The second obs. is from the candy
+category, and indeed its highest score is for candy.
+
+Let's take a deep look at the box plots for each of the scores by real
+category:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ingredient_score_}\DecValTok{12} \OperatorTok{%>%}\StringTok{ }\KeywordTok{select}\NormalTok{(}\OperatorTok{-}\NormalTok{idx) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{pivot_longer}\NormalTok{(}\OperatorTok{-}\NormalTok{category, }\DataTypeTok{names_to =} \StringTok{"category_score"}\NormalTok{, }\DataTypeTok{values_to =} \StringTok{"score"}\NormalTok{)  }\OperatorTok{%>%}\StringTok{ }\KeywordTok{drop_na}\NormalTok{() }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{group_by}\NormalTok{(category) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{ggplot}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x=}\NormalTok{category_score, }\DataTypeTok{y=}\NormalTok{ score, }\DataTypeTok{fill =}\NormalTok{ category_score )) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_boxplot}\NormalTok{(}\DataTypeTok{alpha =} \FloatTok{0.2}\NormalTok{, }\DataTypeTok{outlier.colour =} \StringTok{'red'}\NormalTok{, }\DataTypeTok{outlier.size =} \DecValTok{1}\NormalTok{) }\OperatorTok{+}\StringTok{ }
+\StringTok{  }\KeywordTok{stat_summary}\NormalTok{(}\DataTypeTok{fun.y=}\NormalTok{mean, }\DataTypeTok{geom=}\StringTok{"point"}\NormalTok{, }\DataTypeTok{shape=}\DecValTok{3}\NormalTok{, }\DataTypeTok{size=}\DecValTok{2}\NormalTok{, }\DataTypeTok{color=}\StringTok{"red"}\NormalTok{, }\DataTypeTok{fill=}\StringTok{"red"}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{facet_wrap}\NormalTok{(.}\OperatorTok{~}\StringTok{ }\NormalTok{category , }\DataTypeTok{nrow =} \DecValTok{2}\NormalTok{) }\OperatorTok{+}\StringTok{ }\KeywordTok{coord_flip}\NormalTok{() }\OperatorTok{+}\StringTok{ }
+\StringTok{  }\KeywordTok{theme}\NormalTok{(}\DataTypeTok{legend.position =} \StringTok{""}\NormalTok{, }\DataTypeTok{axis.text.x =} \KeywordTok{element_text}\NormalTok{(}\DataTypeTok{size=}\DecValTok{8}\NormalTok{)) }\OperatorTok{+}\StringTok{ }\KeywordTok{labs}\NormalTok{(}\DataTypeTok{x=} \StringTok{""}\NormalTok{, }\DataTypeTok{y =} \StringTok{"Score"}\NormalTok{, }\DataTypeTok{title =} \StringTok{"Ingredeient Score by Real Category"}\NormalTok{) }
+\end{Highlighting}
+\end{Shaded}
+
+\begin{center}\includegraphics[width=0.8\linewidth]{final_proj_again_files/figure-latex/unnamed-chunk-37-1} \end{center}
+
+As you can see, for any category - it seems that the relevant score does
+tend to have the highest distribution. A significant difference can be
+seen in the categories: candy and chips. There it seems that the score
+does indeed predict well the real category. \textbf{Looks like a nice
+feature to try when building the predictive model :)}
+
+\hypertarget{description}{%
+\subsubsection{Description}\label{description}}
+
+I do not intend to explore in depth this variable, I will just examine
+which words are most common (top5) in each category.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{descr_top_}\DecValTok{5}\NormalTok{ <-}\StringTok{ }\KeywordTok{top_words}\NormalTok{(food_train, }\StringTok{"description"}\NormalTok{, }\DataTypeTok{by_category =}\NormalTok{ T) }\OperatorTok{%>%}\StringTok{ }\NormalTok{dplyr}\OperatorTok{::}\KeywordTok{slice}\NormalTok{(}\DecValTok{1}\OperatorTok{:}\DecValTok{5}\NormalTok{)  }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{unite}\NormalTok{(word_n, }\KeywordTok{c}\NormalTok{(}\StringTok{"word"}\NormalTok{, }\StringTok{"n"}\NormalTok{), }\DataTypeTok{sep =} \StringTok{",n="}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{group_by}\NormalTok{(category) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{group_map}\NormalTok{(}\OperatorTok{~}\NormalTok{.) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{bind_cols}\NormalTok{() }\OperatorTok{%>%}\StringTok{ }\KeywordTok{setNames}\NormalTok{(}\KeywordTok{levels}\NormalTok{(food_train}\OperatorTok{$}\NormalTok{category))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{kable}\NormalTok{(descr_top_}\DecValTok{5}\NormalTok{, }\StringTok{"latex"}\NormalTok{, }\DataTypeTok{booktabs =}\NormalTok{ T) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{kable_styling}\NormalTok{(}\DataTypeTok{latex_options =} \KeywordTok{c}\NormalTok{(}\StringTok{"striped"}\NormalTok{, }\StringTok{"scale down"}\NormalTok{), }\DataTypeTok{font_size =} \DecValTok{8}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{table}[H]
+\centering\begingroup\fontsize{8}{10}\selectfont
+
+\begin{tabular}{llllll}
+\toprule
+cakes & candy & chips & chocolate & cookies & popcorn\\
+\midrule
+\rowcolor{gray!6}  cake,n=1243 & candy,n=2825 & chips,n=2516 & chocolate,n=3142 & cookies,n=3152 & roasted,n=1334\\
+chocolate,n=649 & chocolate,n=783 & potato,n=1387 & milk,n=1204 & chocolate,n=1295 & mix,n=1087\\
+\rowcolor{gray!6}  pie,n=518 & fruit,n=719 & tortilla,n=664 & dark,n=1178 & cookie,n=557 & almonds,n=1070\\
+cupcakes,n=368 & sour,n=513 & kettle,n=428 & caramel,n=338 & chip,n=488 & chocolate,n=982\\
+\rowcolor{gray!6}  mini,n=335 & gummi,n=469 & corn,n=367 & bar,n=332 & sandwich,n=450 & popcorn,n=959\\
+\bottomrule
+\end{tabular}
+\endgroup{}
+\end{table}
+
+makes sense.
+
+Let's look at a similar plot to the one we saw for
+\texttt{household\ serving\ fulltext}. I will look at words that appear
+at least 750 times. The words arranged by their value of entropy.
+
+\includegraphics{final_proj_again_files/figure-latex/unnamed-chunk-40-1.pdf}
+
+\textcolor{red}{For interactive plot - See html file}
+
+We do have pretty strong words for prediction!
+
+\hypertarget{brand}{%
+\subsubsection{Brand}\label{brand}}
+
+5 top brands:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{kable}\NormalTok{(food_train }\OperatorTok{%>%}\StringTok{ }\KeywordTok{group_by}\NormalTok{(brand) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{count}\NormalTok{(brand, }\DataTypeTok{sort =}\NormalTok{ T) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{head}\NormalTok{(}\DecValTok{5}\NormalTok{), }\StringTok{"latex"}\NormalTok{, }\DataTypeTok{booktabs =}\NormalTok{ T) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{kable_styling}\NormalTok{(}\DataTypeTok{latex_options =} \KeywordTok{c}\NormalTok{(}\StringTok{"striped"}\NormalTok{), }\DataTypeTok{font_size =}\DecValTok{8}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{table}[H]
+\centering\begingroup\fontsize{8}{10}\selectfont
+
+\begin{tabular}{lr}
+\toprule
+brand & n\\
+\midrule
+\rowcolor{gray!6}  wal-mart stores, inc. & 579\\
+target stores & 540\\
+\rowcolor{gray!6}  ferrara candy company & 506\\
+not a branded item & 467\\
+\rowcolor{gray!6}  meijer, inc. & 463\\
+\bottomrule
+\end{tabular}
+\endgroup{}
+\end{table}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{brand_data <-}\StringTok{ }\NormalTok{food_train }\OperatorTok{%>%}\StringTok{ }\KeywordTok{group_by}\NormalTok{(brand) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{summarize}\NormalTok{( }\DataTypeTok{n=}\KeywordTok{n}\NormalTok{() , }\DataTypeTok{total_category =} \KeywordTok{n_distinct}\NormalTok{(category)) }
+\KeywordTok{kable}\NormalTok{(}\KeywordTok{t}\NormalTok{(}\KeywordTok{quantile}\NormalTok{(brand_data}\OperatorTok{$}\NormalTok{n , }\DataTypeTok{probs =} \KeywordTok{c}\NormalTok{(}\FloatTok{0.1}\NormalTok{,}\FloatTok{0.25}\NormalTok{,}\FloatTok{0.5}\NormalTok{,}\KeywordTok{seq}\NormalTok{(}\FloatTok{0.7}\NormalTok{,}\DecValTok{1}\NormalTok{,}\FloatTok{0.025}\NormalTok{) ))) ,}\StringTok{"latex"}\NormalTok{, }\DataTypeTok{booktabs =}\NormalTok{ T) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{kable_styling}\NormalTok{(}\DataTypeTok{latex_options =} \KeywordTok{c}\NormalTok{(}\StringTok{"striped"}\NormalTok{), }\DataTypeTok{font_size =} \DecValTok{8}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{table}[H]
+\centering\begingroup\fontsize{8}{10}\selectfont
+
+\begin{tabular}{rrrrrrrrrrrrrrrr}
+\toprule
+10\% & 25\% & 50\% & 70\% & 72.5\% & 75\% & 77.5\% & 80\% & 82.5\% & 85\% & 87.5\% & 90\% & 92.5\% & 95\% & 97.5\% & 100\%\\
+\midrule
+\rowcolor{gray!6}  1 & 1 & 1 & 3 & 3 & 4 & 4 & 5 & 6 & 7 & 8 & 11 & 15 & 23 & 42.45 & 579\\
+\bottomrule
+\end{tabular}
+\endgroup{}
+\end{table}
+
+As you can see: 50\% of the brands sell just one product, 85\% of what
+brands sell no more than 7 products. Only 2.5\% of brands sell between
+42 and 579 products.\\
+Let's look at the distribution of the number of categories sold by
+brands.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{a1 <-}\StringTok{ }\NormalTok{brand_data }\OperatorTok{%>%}\StringTok{ }\KeywordTok{ggplot}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x=} \KeywordTok{factor}\NormalTok{(total_category))) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_bar}\NormalTok{(}\DataTypeTok{stat=}\StringTok{"count"}\NormalTok{, }\DataTypeTok{fill=}\StringTok{"#f68060"}\NormalTok{, }\DataTypeTok{alpha=}\NormalTok{.}\DecValTok{6}\NormalTok{, }\DataTypeTok{width=}\NormalTok{.}\DecValTok{6}\NormalTok{) }\OperatorTok{+}\StringTok{ }\KeywordTok{ylim}\NormalTok{(}\KeywordTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{,}\DecValTok{4100}\NormalTok{)) }\OperatorTok{+}\StringTok{ }
+\StringTok{  }\KeywordTok{geom_text}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{label =}\NormalTok{ ..count..), }\DataTypeTok{stat=} \StringTok{"count"}\NormalTok{, }\DataTypeTok{hjust =} \FloatTok{-.5}\NormalTok{, }\DataTypeTok{size =} \DecValTok{4}\NormalTok{) }\OperatorTok{+}\StringTok{ }
+\StringTok{  }\KeywordTok{coord_flip}\NormalTok{() }\OperatorTok{+}\StringTok{  }\KeywordTok{theme_bw}\NormalTok{() }\OperatorTok{+}
+\StringTok{  }\KeywordTok{labs}\NormalTok{(}\DataTypeTok{x =} \StringTok{"No. of Categories"}\NormalTok{, }\DataTypeTok{y=} \StringTok{"No. of Brands"}\NormalTok{, }\DataTypeTok{title =} \StringTok{"No. of Distinct Categories Sold by Brand"}\NormalTok{) }
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{a2 <-}\StringTok{ }\NormalTok{brand_data }\OperatorTok{%>%}\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{brand_size =} \KeywordTok{case_when}\NormalTok{(n }\OperatorTok{>=}\DecValTok{100}  \OperatorTok{~}\StringTok{ "large"}\NormalTok{, (n }\OperatorTok{>}\StringTok{ }\DecValTok{2} \OperatorTok{&}\StringTok{ }\NormalTok{n }\OperatorTok{<}\StringTok{ }\DecValTok{100}\NormalTok{) }\OperatorTok{~}\StringTok{ "medium"}\NormalTok{ ,}\OtherTok{TRUE}\OperatorTok{~}\StringTok{ "small"}\NormalTok{)) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{ggplot}\NormalTok{( }\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x=} \KeywordTok{factor}\NormalTok{(total_category))) }\OperatorTok{+}\StringTok{ }
+\StringTok{    }\KeywordTok{geom_bar}\NormalTok{(}\DataTypeTok{stat=}\StringTok{"count"}\NormalTok{,  }\DataTypeTok{fill=}\StringTok{"#f68060"}\NormalTok{, }\DataTypeTok{alpha=}\NormalTok{.}\DecValTok{6}\NormalTok{, }\DataTypeTok{width=}\NormalTok{.}\DecValTok{6}\NormalTok{)  }\OperatorTok{+}\StringTok{ }
+\StringTok{  }\KeywordTok{facet_wrap}\NormalTok{(.}\OperatorTok{~}\NormalTok{brand_size, }\DataTypeTok{scales =} \StringTok{"free_x"}\NormalTok{)}\OperatorTok{+}\StringTok{ }
+\StringTok{    }\KeywordTok{geom_text}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{label =}\NormalTok{ ..count..),}\DataTypeTok{size =}\FloatTok{3.5}\NormalTok{  ,  }\DataTypeTok{stat=} \StringTok{"count"}\NormalTok{, }\DataTypeTok{hjust =} \FloatTok{+.8}\NormalTok{) }\OperatorTok{+}
+\StringTok{     }\KeywordTok{coord_flip}\NormalTok{() }\OperatorTok{+}\StringTok{ }\KeywordTok{theme_bw}\NormalTok{()}\OperatorTok{+}\StringTok{ }\KeywordTok{labs}\NormalTok{(}\DataTypeTok{x =} \StringTok{"No. of Categories"}\NormalTok{, }\DataTypeTok{y=} \StringTok{"No. of Brands"}\NormalTok{, }\DataTypeTok{title =} \StringTok{"By Brand Size"}\NormalTok{) }
+\KeywordTok{grid.arrange}\NormalTok{(a1,a2, }\DataTypeTok{nrow=}\DecValTok{2}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{center}\includegraphics[width=0.6\linewidth]{final_proj_again_files/figure-latex/unnamed-chunk-45-1} \end{center}
+
+It can be seen that most of the brands have products from only one snack
+category, while a very small number of brands have products from all
+snack categories. I have divided the brands according to their size (no.
+of products each brand sells) - and it seems thatfor small brands -
+there are usually products from only one category, and for large brands
+the opposite.\\
+This trend can also be seen in the following plot:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{brand_data_plot <-}\StringTok{ }\NormalTok{food_train }\OperatorTok{%>%}\StringTok{ }\KeywordTok{group_by}\NormalTok{(category, brand) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{n=}\KeywordTok{n}\NormalTok{()) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{arrange}\NormalTok{(}\OperatorTok{-}\NormalTok{n) }
+\NormalTok{top_brands <-}\StringTok{ }\NormalTok{food_train }\OperatorTok{%>%}\StringTok{ }\KeywordTok{group_by}\NormalTok{(brand) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{count}\NormalTok{(}\DataTypeTok{sort=}\OtherTok{TRUE}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{head}\NormalTok{(}\DecValTok{10}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{pull}\NormalTok{(brand)}
+\NormalTok{small_brands <-}\StringTok{ }\NormalTok{food_train }\OperatorTok{%>%}\StringTok{ }\KeywordTok{group_by}\NormalTok{(brand) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{count}\NormalTok{(}\DataTypeTok{sort=}\OtherTok{TRUE}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{filter}\NormalTok{(n}\OperatorTok{<}\DecValTok{10}\NormalTok{) }\OperatorTok{%>%}\StringTok{  }\KeywordTok{pull}\NormalTok{(brand)}
+\NormalTok{plot_size_of_brand <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(data, brands, }\DataTypeTok{is_small =}\NormalTok{ F) \{}
+\NormalTok{  p <-}\StringTok{ }\NormalTok{data }\OperatorTok{%>%}\StringTok{ }\KeywordTok{filter}\NormalTok{(brand }\OperatorTok{%in%}\StringTok{ }\NormalTok{brands) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{ggplot}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{y =}\NormalTok{ n, }\DataTypeTok{axis1 =}\NormalTok{ brand, }\DataTypeTok{axis2 =}\NormalTok{ category)) }\OperatorTok{+}
+\StringTok{     }\KeywordTok{geom_alluvium}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{fill =}\NormalTok{ brand)) }\OperatorTok{+}\StringTok{  }\KeywordTok{geom_stratum}\NormalTok{(}\DataTypeTok{width =} \DecValTok{1}\OperatorTok{/}\DecValTok{20}\NormalTok{, }\DataTypeTok{fill =} \StringTok{"black"}\NormalTok{, }\DataTypeTok{color =} \StringTok{"white"}\NormalTok{) }\OperatorTok{+}
+\StringTok{     }\KeywordTok{geom_stratum}\NormalTok{(}\DataTypeTok{width =} \DecValTok{1}\OperatorTok{/}\DecValTok{20}\NormalTok{, }\DataTypeTok{fill =} \StringTok{"black"}\NormalTok{, }\DataTypeTok{color =} \StringTok{"white"}\NormalTok{) }\OperatorTok{+}\StringTok{ }
+\StringTok{     }\KeywordTok{geom_label}\NormalTok{(}\DataTypeTok{stat =} \StringTok{"stratum"}\NormalTok{, }\DataTypeTok{infer.label =} \OtherTok{TRUE}\NormalTok{, }\DataTypeTok{size =} \FloatTok{2.8}\NormalTok{) }\OperatorTok{+}\StringTok{ }
+\StringTok{     }\KeywordTok{scale_x_discrete}\NormalTok{(}\DataTypeTok{limits =} \KeywordTok{c}\NormalTok{(}\StringTok{"brand"}\NormalTok{, }\StringTok{"category"}\NormalTok{), }\DataTypeTok{expand =} \KeywordTok{c}\NormalTok{(.}\DecValTok{05}\NormalTok{, }\FloatTok{.31}\NormalTok{)) }\OperatorTok{+}
+\StringTok{     }\KeywordTok{scale_fill_brewer}\NormalTok{(}\DataTypeTok{palette =} \StringTok{"RdYlBu"}\NormalTok{) }\OperatorTok{+}\StringTok{  }\KeywordTok{guides}\NormalTok{(}\DataTypeTok{fill =} \OtherTok{FALSE}\NormalTok{) }\OperatorTok{+}
+\StringTok{     }\KeywordTok{labs}\NormalTok{(}\DataTypeTok{y =} \StringTok{""}\NormalTok{, }\DataTypeTok{title =} \StringTok{"Top 10 Brands by Category"}\NormalTok{) }
+  \ControlFlowTok{if}\NormalTok{(is_small) p <-}\StringTok{ }\NormalTok{p }\OperatorTok{+}\StringTok{ }\KeywordTok{labs}\NormalTok{(}\DataTypeTok{title =} \StringTok{"Small 10 Brands by Category (~10 products)"}\NormalTok{)}
+\NormalTok{  p}
+\NormalTok{\}}
+\NormalTok{p1 <-}\StringTok{ }\KeywordTok{plot_size_of_brand}\NormalTok{(brand_data_plot, top_brands[}\DecValTok{1}\OperatorTok{:}\DecValTok{10}\NormalTok{])}
+\NormalTok{p3 <-}\StringTok{ }\KeywordTok{plot_size_of_brand}\NormalTok{(brand_data_plot, small_brands[}\DecValTok{1}\OperatorTok{:}\DecValTok{10}\NormalTok{], T)}
+\KeywordTok{grid.arrange}\NormalTok{(p1,p3, }\DataTypeTok{ncol =} \DecValTok{2}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{center}\includegraphics{final_proj_again_files/figure-latex/unnamed-chunk-46-1} \end{center}
+
+It therefore appears that brand size may be an important predictor
+variable.
+
+\hypertarget{serving-size-serving-size-unit}{%
+\subsubsection{Serving Size \& Serving Size
+Unit}\label{serving-size-serving-size-unit}}
+
+In the quick view of the data we saw summary of this feature.\\
+There are only 8 obs. in which their serving size measured in ``ml'':
+
+\begin{table}[H]
+\centering\begingroup\fontsize{8}{10}\selectfont
+
+\begin{tabular}{lrl}
+\toprule
+description & serving\_size & category\\
+\midrule
+\rowcolor{gray!6}  sour \& fruity candy & 9.0 & candy\\
+bubbles candy & 20.0 & candy\\
+\rowcolor{gray!6}  icee, squeeze candy, blue raspberry & 62.0 & candy\\
+toxic waste, slime licker sour rolling liquid candy & 5.0 & candy\\
+\rowcolor{gray!6}  markets of meijer, fresg cin-a-butter pound cake & 480.0 & cakes\\
+\addlinespace
+spray candy & 4.5 & candy\\
+\rowcolor{gray!6}  candylicious bubbles & 20.0 & candy\\
+candy spray & 90.0 & candy\\
+\bottomrule
+\end{tabular}
+\endgroup{}
+\end{table}
+
+But in the test we have no observations in which unit\_size = ml:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{sum}\NormalTok{(food_test}\OperatorTok{$}\NormalTok{serving_size_unit }\OperatorTok{==}\StringTok{ "ml"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0
+\end{verbatim}
+
+Therefore, I am going to ignore the feature \texttt{serving\_size\_unit}
+in the modeling part since I don't belive I can learn something from
+only 8 obs.
+
+Let's take a look at the density of serving size by category \& size
+unit (I trimmed extreme values)
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{color_set <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{"#F1948A"}\NormalTok{,}\StringTok{"#C39BD3"}\NormalTok{, }\StringTok{"#7FB3D5"}\NormalTok{, }\StringTok{"#76D7C4"}\NormalTok{, }\StringTok{"#F7DC6F"}\NormalTok{, }\StringTok{"#F0B27A"}\NormalTok{)}
+\NormalTok{g_fun <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(data, alpha ,unit_size) \{}
+\NormalTok{  p <-}\StringTok{ }\NormalTok{data }\OperatorTok{%>%}\StringTok{ }\KeywordTok{filter}\NormalTok{(serving_size_unit }\OperatorTok{==}\StringTok{ }\NormalTok{unit_size) }\OperatorTok{%>%}\StringTok{  }\KeywordTok{group_by}\NormalTok{(category) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{    }\KeywordTok{filter}\NormalTok{(serving_size }\OperatorTok{>=}\StringTok{ }\KeywordTok{quantile}\NormalTok{(serving_size, }\FloatTok{0.01}\NormalTok{) }\OperatorTok{&}\StringTok{ }\NormalTok{serving_size }\OperatorTok{<=}\StringTok{  }\KeywordTok{quantile}\NormalTok{(serving_size, }\FloatTok{0.99}\NormalTok{) )  }\OperatorTok{%>%}\StringTok{ }
+\StringTok{    }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{median_servig_size =} \KeywordTok{median}\NormalTok{(serving_size)) }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{ggplot}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x =} \KeywordTok{reorder}\NormalTok{(category, }\OperatorTok{-}\NormalTok{median_servig_size) , }\DataTypeTok{y =}\NormalTok{ serving_size, }\DataTypeTok{color =}\NormalTok{ category  )) }\OperatorTok{+}
+\StringTok{    }\KeywordTok{geom_violin}\NormalTok{(}\DataTypeTok{scale=}\StringTok{"width"}\NormalTok{, }\DataTypeTok{size=}\NormalTok{.}\DecValTok{5}\NormalTok{)  }\OperatorTok{+}\StringTok{  }\KeywordTok{geom_quasirandom}\NormalTok{(}\DataTypeTok{alpha =}\NormalTok{ alpha) }\OperatorTok{+}\StringTok{ }
+\StringTok{    }\KeywordTok{scale_color_manual}\NormalTok{(}\DataTypeTok{values =}\NormalTok{ color_set) }\OperatorTok{+}\StringTok{   }\KeywordTok{coord_flip}\NormalTok{() }\OperatorTok{+}\StringTok{ }
+\StringTok{    }\KeywordTok{theme_bw}\NormalTok{() }\OperatorTok{+}\KeywordTok{labs}\NormalTok{(}\DataTypeTok{title =}\NormalTok{ unit_size, }\DataTypeTok{x =}\StringTok{""}\NormalTok{,}\DataTypeTok{y=}\StringTok{""}\NormalTok{) }\OperatorTok{+}\StringTok{  }\KeywordTok{theme}\NormalTok{(}\DataTypeTok{legend.position =} \StringTok{""}\NormalTok{)}
+  \ControlFlowTok{if}\NormalTok{(unit_size }\OperatorTok{==}\StringTok{ "ml"}\NormalTok{) p <-}\StringTok{ }\NormalTok{p }\OperatorTok{+}\StringTok{ }\KeywordTok{scale_y_continuous}\NormalTok{(}\DataTypeTok{breaks =} \KeywordTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{,}\DecValTok{200}\NormalTok{,}\DecValTok{400}\NormalTok{)) }\OperatorTok{+}\StringTok{ }\KeywordTok{scale_color_manual}\NormalTok{(}\DataTypeTok{values =} \KeywordTok{c}\NormalTok{(}\StringTok{"#F1948A"}\NormalTok{, }\StringTok{"#C39BD3"}\NormalTok{))}
+\NormalTok{  p}
+\NormalTok{\}}
+\NormalTok{g1 <-}\StringTok{ }\KeywordTok{g_fun}\NormalTok{(food_train, }\FloatTok{0.02}\NormalTok{, }\StringTok{"g"}\NormalTok{) ; g2 <-}\StringTok{ }\KeywordTok{g_fun}\NormalTok{(food_train, }\FloatTok{0.5}\NormalTok{, }\StringTok{"ml"}\NormalTok{)}
+\KeywordTok{grid.arrange}\NormalTok{(g1,g2, }\DataTypeTok{ncol=}\DecValTok{2}\NormalTok{, }\DataTypeTok{widths =} \KeywordTok{c}\NormalTok{(}\FloatTok{3.5}\NormalTok{,}\DecValTok{1}\NormalTok{),  }\DataTypeTok{top =} \StringTok{"Serving Size Density By Category & Size Unit"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{center}\includegraphics{final_proj_again_files/figure-latex/unnamed-chunk-49-1} \end{center}
+
+It seems that the size of cakes tends to be larger and has the largest
+variance. The distributions of chips and Popcorn are quite similar. The
+distributions of candy and chocolate are also relatively similar.
+
+\hypertarget{food-nutrition-nutrients}{%
+\subsubsection{Food Nutrition \&
+Nutrients}\label{food-nutrition-nutrients}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{nutr_data <-}\StringTok{ }\NormalTok{food_train_all }\OperatorTok{%>%}\StringTok{ }\KeywordTok{select}\NormalTok{(idx, nutrient_id, amount, category, name, unit_name, description, brand, img_path) }
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{cat}\NormalTok{(}\StringTok{"There are"}\NormalTok{, nutr_data }\OperatorTok{%>%}\StringTok{ }\KeywordTok{group_by}\NormalTok{(name) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{distinct}\NormalTok{(name) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{nrow}\NormalTok{(), }\StringTok{"food nutrients"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## There are 47 food nutrients
+\end{verbatim}
+
+What are the most common nutrients and their average amount? (top 5)
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{kable}\NormalTok{(nutr_data }\OperatorTok{%>%}\StringTok{ }\KeywordTok{filter}\NormalTok{(amount }\OperatorTok{>}\StringTok{ }\DecValTok{0}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{group_by}\NormalTok{(name) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{        }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{n=}\KeywordTok{n}\NormalTok{(), }\DataTypeTok{mean_amount =} \KeywordTok{mean}\NormalTok{(amount)) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{arrange}\NormalTok{(}\OperatorTok{-}\NormalTok{n) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{head}\NormalTok{(}\DecValTok{5}\NormalTok{), }\StringTok{"latex"}\NormalTok{, }\DataTypeTok{booktabs =}\NormalTok{ T) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{kable_styling}\NormalTok{(}\DataTypeTok{latex_options =} \KeywordTok{c}\NormalTok{(}\StringTok{"striped"}\NormalTok{) , }\DataTypeTok{font_size =} \DecValTok{8}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{table}[H]
+\centering\begingroup\fontsize{8}{10}\selectfont
+
+\begin{tabular}{lrr}
+\toprule
+name & n & mean\_amount\\
+\midrule
+\rowcolor{gray!6}  Energy & 31732 & 460.350214\\
+Carbohydrate, by difference & 31725 & 59.707241\\
+\rowcolor{gray!6}  Sugars, total including NLEA & 29156 & 36.819905\\
+Protein & 27558 & 8.029765\\
+\rowcolor{gray!6}  Sodium, Na & 27192 & 339.265152\\
+\bottomrule
+\end{tabular}
+\endgroup{}
+\end{table}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{nutr_data2 <-}\StringTok{ }\NormalTok{nutr_data }\OperatorTok{%>%}\StringTok{ }\KeywordTok{group_by}\NormalTok{(category ,unit_name, name) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{filter}\NormalTok{(amount}\OperatorTok{!=}\DecValTok{0}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{mean_amount =} \KeywordTok{mean}\NormalTok{(amount) ,}\DataTypeTok{n =} \KeywordTok{n}\NormalTok{())}
+\NormalTok{order_nutrient <-}\StringTok{ }\NormalTok{nutr_data }\OperatorTok{%>%}\StringTok{ }\KeywordTok{filter}\NormalTok{(amount }\OperatorTok{!=}\DecValTok{0}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{count}\NormalTok{(name, }\DataTypeTok{sort =}\NormalTok{ T) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{arrange}\NormalTok{(n) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{pull}\NormalTok{(name) }
+\end{Highlighting}
+\end{Shaded}
+
+Let's take a look at heatmap of nutrients by category. For each of the
+units of measurement, I normalized the average amount to be between 0
+and 1, so that they would be comparable.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{plotly_nutr <-}\StringTok{ }\NormalTok{nutr_data2 }\OperatorTok{%>%}\StringTok{ }\KeywordTok{group_by}\NormalTok{(unit_name) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{normalize_mean_amount =}\NormalTok{ mean_amount}\OperatorTok{/}\KeywordTok{max}\NormalTok{(mean_amount),}\DataTypeTok{name =} \KeywordTok{factor}\NormalTok{(name, }\DataTypeTok{levels =}\NormalTok{ order_nutrient)) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{ggplot}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x =}\NormalTok{ category,}\DataTypeTok{y =}\NormalTok{ name , }\DataTypeTok{fill=}\NormalTok{ normalize_mean_amount,}
+                  \DataTypeTok{text =} \KeywordTok{paste}\NormalTok{(}\StringTok{"Nutrient"}\NormalTok{, name, }\StringTok{"}\CharTok{\textbackslash{}n}\StringTok{ Category"}\NormalTok{, category, }\StringTok{"}\CharTok{\textbackslash{}n}\StringTok{ Average Amount"}\NormalTok{, }\KeywordTok{round}\NormalTok{(mean_amount,}\DecValTok{2}\NormalTok{),}
+                               \StringTok{"}\CharTok{\textbackslash{}n}\StringTok{ Normalizes mean"}\NormalTok{, normalize_mean_amount , }\StringTok{"}\CharTok{\textbackslash{}n}\StringTok{ Count"}\NormalTok{, n))) }\OperatorTok{+}\StringTok{ }
+\StringTok{  }\KeywordTok{geom_tile}\NormalTok{() }\OperatorTok{+}\StringTok{ }\KeywordTok{scale_fill_gradient}\NormalTok{(}\DataTypeTok{low=}\StringTok{"#CDFFF7"}\NormalTok{, }\DataTypeTok{high=}\StringTok{"#007F5F"}\NormalTok{, }\DataTypeTok{name =} \StringTok{""}\NormalTok{)  }\OperatorTok{+}\StringTok{ }
+\StringTok{  }\KeywordTok{theme_bw}\NormalTok{() }\OperatorTok{+}\StringTok{  }\KeywordTok{theme}\NormalTok{(}\DataTypeTok{axis.text =} \KeywordTok{element_text}\NormalTok{(}\DataTypeTok{size =} \FloatTok{6.5}\NormalTok{), }\DataTypeTok{text =} \KeywordTok{element_text}\NormalTok{(}\DataTypeTok{size=}\DecValTok{8}\NormalTok{)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{labs}\NormalTok{(}\DataTypeTok{title =} \StringTok{"Normalized Average Amount of Food Nutrition by Snack's Category"}\NormalTok{,}
+       \DataTypeTok{y =} \StringTok{"Nutrient Name"}\NormalTok{, }\DataTypeTok{x=}\StringTok{""}\NormalTok{, }\DataTypeTok{subtitle =} \StringTok{"For each of the unit sizes - normalized average amount between 0 to 1"}\NormalTok{, }\DataTypeTok{caption =} \StringTok{"Sorted by the most common nutrient(on top), and goes down to the less common ones"}\NormalTok{)}
+\NormalTok{plotly_nutr}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{center}\includegraphics[width=0.75\linewidth]{final_proj_again_files/figure-latex/unnamed-chunk-54-1} \end{center}
+
+\textcolor{red}{For interactive plot - See html file}
+
+Let's take a deep look at the 9 most popular nutrients:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{nutr_data }\OperatorTok{%>%}\StringTok{ }\KeywordTok{filter}\NormalTok{(amount }\OperatorTok{!=}\DecValTok{0}\NormalTok{, name }\OperatorTok{%in%}\StringTok{ }\KeywordTok{rev}\NormalTok{(order_nutrient)[}\DecValTok{1}\OperatorTok{:}\DecValTok{9}\NormalTok{]) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{group_by}\NormalTok{(category,name) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{ggplot}\NormalTok{(}\DataTypeTok{mapping =} \KeywordTok{aes}\NormalTok{(}\DataTypeTok{x =}\NormalTok{ category, }\DataTypeTok{y =}\NormalTok{ amount, }\DataTypeTok{fill =}\NormalTok{ category)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_boxplot}\NormalTok{(}\DataTypeTok{outlier.colour =} \StringTok{'red'}\NormalTok{, }\DataTypeTok{outlier.size =} \FloatTok{.8}\NormalTok{, }\DataTypeTok{outlier.shape =} \DecValTok{4}\NormalTok{, }\DataTypeTok{alpha=}\NormalTok{.}\DecValTok{5}\NormalTok{, }\DataTypeTok{show.legend =}\NormalTok{ F) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{facet_wrap}\NormalTok{(name}\OperatorTok{~}\NormalTok{., }\DataTypeTok{scales =} \StringTok{"free_x"}\NormalTok{, }\DataTypeTok{nrow =} \DecValTok{3}\NormalTok{) }\OperatorTok{+}\StringTok{ }\KeywordTok{scale_fill_brewer}\NormalTok{(}\DataTypeTok{palette =} \StringTok{"Set2"}\NormalTok{) }\OperatorTok{+}\StringTok{ }
+\StringTok{  }\KeywordTok{theme_light}\NormalTok{() }\OperatorTok{+}\StringTok{ }\KeywordTok{coord_flip}\NormalTok{() }\OperatorTok{+}\StringTok{ }\KeywordTok{labs}\NormalTok{(}\DataTypeTok{x=}\StringTok{""}\NormalTok{, }\DataTypeTok{y=} \StringTok{"Amount"}\NormalTok{, }\DataTypeTok{title =} \StringTok{"Top Nutrients Amount by Category"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{center}\includegraphics[width=0.95\linewidth]{final_proj_again_files/figure-latex/unnamed-chunk-56-1} \end{center}
+
+There are products with very extreme values. Maybe it's typos, and maybe
+it's true. Let's explore some of them:
+
+\textbf{Total lipid(fat)}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{df2 <-}\StringTok{ }\NormalTok{nutr_data }\OperatorTok{%>%}\StringTok{ }\KeywordTok{filter}\NormalTok{(name }\OperatorTok{==}\StringTok{ "Total lipid (fat)"}\NormalTok{, amount}\OperatorTok{>}\DecValTok{90}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{select}\NormalTok{(idx, name, amount,unit_name, category, brand, description,img_path)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{table}[H]
+\centering\begingroup\fontsize{8}{10}\selectfont
+
+\begin{tabular}{rlrllll}
+\toprule
+idx & name & amount & unit\_name & category & brand & description\\
+\midrule
+\rowcolor{gray!6}  10968 & Total lipid (fat) & 100.00 & G & candy & rb. confections, lc. & dierbergs markets, soft cherry candy balls\\
+10986 & Total lipid (fat) & 97.67 & G & candy & jerry kelly deli, inc. & the candy tree, gum drop candy\\
+\rowcolor{gray!6}  16201 & Total lipid (fat) & 92.50 & G & chocolate & chocolate holdings, inc. & charles chocolates, orange twigs chocolate\\
+17911 & Total lipid (fat) & 100.00 & G & popcorn & so nut and confections & praline pecans\\
+\rowcolor{gray!6}  23556 & Total lipid (fat) & 100.00 & G & popcorn & kara chocolates & happy easter caramel and bunny corn mix\\
+\bottomrule
+\end{tabular}
+\endgroup{}
+\end{table}
+
+Let's take a look on them: (\emph{the order is according to the table
+from left to right})
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{knitr}\OperatorTok{::}\KeywordTok{include_graphics}\NormalTok{(df2 }\OperatorTok{%>%}\StringTok{ }\KeywordTok{select}\NormalTok{(img_path)}\OperatorTok{%>%}\StringTok{ }\KeywordTok{pull}\NormalTok{())}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{center}\includegraphics[width=0.09\linewidth]{project_images/foods_final/train/candy/10968} \includegraphics[width=0.09\linewidth]{project_images/foods_final/train/candy/10986} \includegraphics[width=0.09\linewidth]{project_images/foods_final/train/chocolate/16201} \includegraphics[width=0.09\linewidth]{project_images/foods_final/train/popcorn_peanuts_seeds_related_snacks/17911} \includegraphics[width=0.09\linewidth]{project_images/foods_final/train/popcorn_peanuts_seeds_related_snacks/23556} \end{center}
+
+Be careful with those snacks!! Very NOT healthy!
+
+\textbf{Protein} - We can see one product contain \textbf{100\%} of
+protein! It is clearly NOT true\ldots{}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{df3 <-}\StringTok{ }\NormalTok{nutr_data }\OperatorTok{%>%}\StringTok{ }\KeywordTok{filter}\NormalTok{(name }\OperatorTok{==}\StringTok{ "Protein"}\NormalTok{, amount}\OperatorTok{==}\DecValTok{100}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{select}\NormalTok{(idx, name, amount,unit_name, category, brand, description,img_path) }
+\end{Highlighting}
+\end{Shaded}
+
+\begin{table}[H]
+\centering\begingroup\fontsize{7}{9}\selectfont
+
+\begin{tabular}{rlrllll}
+\toprule
+idx & name & amount & unit\_name & category & brand & description\\
+\midrule
+13676 & Protein & 100 & G & chocolate & tcho & tcho, tcho-a-day dark chocolate\\
+\bottomrule
+\end{tabular}
+\endgroup{}
+\end{table}
+
+\begin{center}\includegraphics[width=0.07\linewidth]{project_images/foods_final/train/chocolate/13676} \end{center}
+
+And we can keep going like that but due to lack of space I will stop
+here :)
+
+\hypertarget{images}{%
+\subsubsection{Images}\label{images}}
+
+I created in python histograms of the 3 colors of the ``average image''
+by category (I calculated the average value for each of the pixels
+across all images of each of the categories). The entire code avalilabe
+at the notebook.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{mean_img_by_category <-}\StringTok{ }\NormalTok{category_hist_by_rgb }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{pivot_longer}\NormalTok{(}\KeywordTok{everything}\NormalTok{(),}\DataTypeTok{names_to =} \StringTok{"category_color"}\NormalTok{, }\DataTypeTok{values_to =} \StringTok{"mean_pixel"}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{separate}\NormalTok{(category_color, }\KeywordTok{c}\NormalTok{(}\StringTok{"category"}\NormalTok{, }\StringTok{"color"}\NormalTok{), }\DataTypeTok{sep =} \StringTok{"}\CharTok{\textbackslash{}\textbackslash{}}\StringTok{."}\NormalTok{ ) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{mutate_at}\NormalTok{(}\StringTok{"category"}\NormalTok{, as.factor)}
+\KeywordTok{levels}\NormalTok{(mean_img_by_category}\OperatorTok{$}\NormalTok{category) <-}\StringTok{  }\KeywordTok{c}\NormalTok{(}\StringTok{"cakes"}\NormalTok{, }\StringTok{"candy"}\NormalTok{, }\StringTok{"chips"}\NormalTok{, }\StringTok{"chocolate"}\NormalTok{, }\StringTok{"cookies"}\NormalTok{, }\StringTok{"popcorn"}\NormalTok{ )}
+  
+\NormalTok{mean_img_by_category }\OperatorTok{%>%}\StringTok{ }\KeywordTok{ggplot}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x=}\NormalTok{ mean_pixel, }\DataTypeTok{fill =}\NormalTok{ color)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_histogram}\NormalTok{(}\DataTypeTok{alpha=}\FloatTok{0.4}\NormalTok{, }\DataTypeTok{color =} \StringTok{"white"}\NormalTok{, }\DataTypeTok{bins =} \DecValTok{30}\NormalTok{,}\DataTypeTok{show.legend =} \OtherTok{FALSE}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{facet_wrap}\NormalTok{(.}\OperatorTok{~}\NormalTok{category, }\DataTypeTok{nrow =}\DecValTok{2}\NormalTok{) }\OperatorTok{+}\StringTok{ }\KeywordTok{xlim}\NormalTok{(}\DecValTok{0}\NormalTok{,}\DecValTok{255}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{scale_fill_manual}\NormalTok{(}\DataTypeTok{values =} \KeywordTok{c}\NormalTok{(}\StringTok{"blue"}\NormalTok{, }\StringTok{"green"}\NormalTok{, }\StringTok{"red"}\NormalTok{)) }\OperatorTok{+}\StringTok{ }\KeywordTok{theme}\NormalTok{(}\DataTypeTok{legend.position =} \StringTok{"none"}\NormalTok{) }\OperatorTok{+}\StringTok{ }\KeywordTok{theme_bw}\NormalTok{() }\OperatorTok{+}
+\StringTok{  }\KeywordTok{labs}\NormalTok{(}\DataTypeTok{title =}\StringTok{"Colors Histograms of the Average Image By Category"}\NormalTok{, }\DataTypeTok{x=}\StringTok{""}\NormalTok{ )}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{center}\includegraphics[width=0.8\linewidth]{final_proj_again_files/figure-latex/unnamed-chunk-65-1} \end{center}
+
+Indeed there are differences, some larger and some less, between the
+color histograms of the ``average image'' in each of the categories.
+Although it doesn't seem that on average there is any noticeable trend
+of difference between the images of different categories.
+
+\emph{Note: Page numbering starts from 2, So I'm still ok :)} \newpage
+
+\hypertarget{modeling}{%
+\section{Modeling}\label{modeling}}
+
+\hypertarget{strategy}{%
+\subsection{Strategy}\label{strategy}}
+
+I'll split the data into six parts:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Class Imbalance}
+\item
+  \textbf{Numerical Features} - Nutrients, Serving Size, Ingredient
+  Score, Household Service fulltext num
+\item
+  \textbf{Categorical Features} - Brand, Unit Size - \emph{as I said
+  before, I'll ignore this feature.}, Serving Fulltext
+\item
+  \textbf{Text Features} - Ingredients, Description
+\item
+  \textbf{Model Tunning}
+\item
+  \textbf{Model Selection} - Select the best model out of all the
+  models.
+\end{enumerate}
+
+\textbf{Missing data}- As we saw in part A, we have a small no. of NA's
+both in the train set and in the test set. Also, all the NA's are in
+categorical features. I decided anyway to keep these observations and to
+use \texttt{step\_unknown} or mode/mean impute. Therefore, I do not
+intend to allocate data for the treatment of missing values since even
+if there's a trend regarding NA's since it's such a small number, you
+can not learn anything from it.
+
+\textbf{Intercations} - Most of the models that I am considering is
+taking care of intercations (neural networks, tree based models, svm),
+so I don't allocate data to consider possible interactions.
+
+\textbf{Nutrients Data set} - I decided to insert each nutrient
+individually using the columns I created (``nutr\_''), and I intend to
+normalize them all. Therefore I do not want to include
+\texttt{unit\_name} in my models since if all the nutrients are
+normalized and inserted separately - it has no meaning.
+
+\hypertarget{models}{%
+\subsubsection{Models}\label{models}}
+
+I'll consider the following models: Multinomial regression lasso,
+Multinomial regression ridge, SVM rbf, SVM poly, Random Forest, Xgboost,
+KNN, Nueral Networks.
+
+\emph{Due to lots of problems running \texttt{keras} and
+\texttt{tensorflow} using \texttt{reticulate}, I decided that I would
+run the network models after making all the decisions (ie in the final
+stage of model selection) in Python.}
+
+\hypertarget{initial-data-nas}{%
+\subsubsection{Initial Data + NA's}\label{initial-data-nas}}
+
+The data (train + test) I will start with will also include the columns
+I created for each nutrient, the clean ingredients column, and another
+column I created from the numbers in the
+``household\_serving\_fulltext'' column.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{food_train_initial <-}\StringTok{ }\NormalTok{food_train_with_nutrients }\OperatorTok{%>%}\StringTok{ }\KeywordTok{mutate}\NormalTok{(}
+  \DataTypeTok{new_ingredient =}\NormalTok{ ingredients_data_train}\OperatorTok{$}\NormalTok{new_ingredient,}
+  \DataTypeTok{household_serving_fulltext_num =} \KeywordTok{as.numeric}\NormalTok{(}\KeywordTok{str_extract}\NormalTok{(household_serving_fulltext, }\DataTypeTok{pattern =} \StringTok{"^}\CharTok{\textbackslash{}\textbackslash{}}\StringTok{d+}\CharTok{\textbackslash{}\textbackslash{}}\StringTok{.?}\CharTok{\textbackslash{}\textbackslash{}}\StringTok{d*"}\NormalTok{)))}
+\NormalTok{food_test_initial <-}\StringTok{ }\NormalTok{food_test_with_nutrients }\OperatorTok{%>%}\StringTok{ }\KeywordTok{mutate}\NormalTok{(}
+  \DataTypeTok{new_ingredient =}\NormalTok{ ingredients_data_test}\OperatorTok{$}\NormalTok{new_ingredient,}
+  \DataTypeTok{household_serving_fulltext_num =} \KeywordTok{as.numeric}\NormalTok{(}\KeywordTok{str_extract}\NormalTok{(household_serving_fulltext, }\DataTypeTok{pattern =} \StringTok{"^}\CharTok{\textbackslash{}\textbackslash{}}\StringTok{d+}\CharTok{\textbackslash{}\textbackslash{}}\StringTok{.?}\CharTok{\textbackslash{}\textbackslash{}}\StringTok{d*"}\NormalTok{)))}
+\end{Highlighting}
+\end{Shaded}
+
+As we saw in Part A, there are very few NAs. We saw that in the
+\texttt{brand} column in the test set there is one NA - I will replace
+it with ``not a branded item'':
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{food_test_initial <-}\StringTok{ }\NormalTok{food_test_initial }\OperatorTok{%>%}\StringTok{ }\KeywordTok{mutate}\NormalTok{(}\StringTok{"brand"}\NormalTok{=}\StringTok{  }\KeywordTok{fct_explicit_na}\NormalTok{(brand, }\StringTok{"not a branded item"}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+As I said, I'll deal with the rest of the NA's already through the use
+of the recipes.
+
+\hypertarget{spliting-the-data}{%
+\subsubsection{Spliting the data}\label{spliting-the-data}}
+
+The split was done as follows (code in notebook):
+
+\begin{table}[H]
+\centering\begingroup\fontsize{10}{12}\selectfont
+
+\begin{tabular}{llllllll}
+\toprule
+\rowcolor{gray!6}  name & imbalance & numerical & categorical & txt & tunning & selection & test\\
+n\_rows & 2500 & 4000 & 5001 & 5001 & 4000 & 4901 & 6348\\
+\bottomrule
+\end{tabular}
+\endgroup{}
+\end{table}
+
+In addition, I kept the indexes for the train \& test so that I could
+split the data in the same way in Python, when I run the neural network
+model with images.
+
+\hypertarget{main-functions}{%
+\subsubsection{Main Functions}\label{main-functions}}
+
+Create functions for running the models:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{fit_model <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(rec_obj, model) \{ }\CommentTok{# get: recipe and model, returns: fit object}
+  \KeywordTok{fit}\NormalTok{(model, category }\OperatorTok{~}\StringTok{ }\NormalTok{., }\DataTypeTok{data =} \KeywordTok{juice}\NormalTok{(rec_obj, }\KeywordTok{all_predictors}\NormalTok{(), }\KeywordTok{all_outcomes}\NormalTok{())) \}}
+\CommentTok{# a function that creates data frame with all the possible combinations between model & recipe}
+\NormalTok{all_comb_mod_rec <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(name_rec , names_models) \{}
+\NormalTok{  n_mods <-}\StringTok{ }\KeywordTok{length}\NormalTok{(names_models)}
+  \KeywordTok{tibble}\NormalTok{( }\StringTok{"name_rec"}\NormalTok{ =}\StringTok{ }\KeywordTok{rep}\NormalTok{(name_rec, n_mods), }\StringTok{"model_name"}\NormalTok{ =}\StringTok{ }\NormalTok{names_models)  \}}
+\CommentTok{# a function that returns the model and recipe predictions for a particular split.}
+\NormalTok{pred_mod <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(split_obj, rec_obj, model_obj) \{}
+\NormalTok{  mod_data <-}\StringTok{ }\KeywordTok{bake}\NormalTok{(rec_obj,}
+                   \DataTypeTok{new_data =} \KeywordTok{assessment}\NormalTok{(split_obj),}
+                   \KeywordTok{all_predictors}\NormalTok{(), }\KeywordTok{all_outcomes}\NormalTok{())}
+\NormalTok{  out <-}\StringTok{ }\NormalTok{mod_data }\OperatorTok{%>%}\StringTok{ }\KeywordTok{select}\NormalTok{(category)}
+\NormalTok{  out}\OperatorTok{$}\NormalTok{predicted <-}\StringTok{ }\KeywordTok{predict}\NormalTok{(model_obj, mod_data)}\OperatorTok{$}\NormalTok{.pred_class}
+\NormalTok{  out}
+\NormalTok{\}}
+\CommentTok{# a function to train the recipe}
+\NormalTok{train_recipe <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(rec_name, model_name,splits, lst_recs, lst_mods) \{}
+  \KeywordTok{cat}\NormalTok{(}\StringTok{"start working:"}\NormalTok{ ,rec_name, model_name, }\KeywordTok{paste}\NormalTok{(}\KeywordTok{Sys.time}\NormalTok{()), }\StringTok{"}\CharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\NormalTok{  splits_prepped <-}\StringTok{ }\KeywordTok{map}\NormalTok{(splits, prepper, }\DataTypeTok{recipe =}\NormalTok{ lst_recs[[rec_name]])}
+\NormalTok{  splits_fit <-}\StringTok{ }\KeywordTok{map}\NormalTok{(splits_prepped, fit_model , }\DataTypeTok{model =}\NormalTok{ lst_mods[[model_name]] )}
+\NormalTok{  splits_pred <-}\StringTok{ }\KeywordTok{pmap}\NormalTok{(}
+    \KeywordTok{lst}\NormalTok{(}\DataTypeTok{split_obj =}\NormalTok{ splits, }\DataTypeTok{rec_obj =}\NormalTok{ splits_prepped,  }\DataTypeTok{model_obj =}\NormalTok{ splits_fit),}
+\NormalTok{    pred_mod}
+\NormalTok{  )}
+\NormalTok{  res <-}\StringTok{ }\KeywordTok{map_dfr}\NormalTok{(splits_pred, accuracy, category, predicted)}\OperatorTok{$}\NormalTok{.estimate}
+\NormalTok{  name_res <-}\StringTok{  }\KeywordTok{paste0}\NormalTok{(rec_name,}\StringTok{"."}\NormalTok{, model_name)}
+  \KeywordTok{cat}\NormalTok{(}\StringTok{"mean cv accuracy"}\NormalTok{, }\KeywordTok{mean}\NormalTok{(res) , }\StringTok{"}\CharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+  \KeywordTok{tibble}\NormalTok{(res) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{setNames}\NormalTok{(name_res)}
+\NormalTok{\}}
+\CommentTok{# a function to compute acc for each of the models & recipes}
+\NormalTok{acc_fun <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{( df_mods_recs, lst_recs ,lst_mods ,  cv_df) \{}
+\NormalTok{  cv_df <-}\StringTok{ }\NormalTok{cv_df }\OperatorTok{%>%}\StringTok{  }\KeywordTok{bind_cols}\NormalTok{(}
+      \KeywordTok{map2_dfc}\NormalTok{(df_mods_recs}\OperatorTok{$}\NormalTok{name_rec, df_mods_recs}\OperatorTok{$}\NormalTok{model_name, train_recipe,}
+              \DataTypeTok{splits =}\NormalTok{ cv_df}\OperatorTok{$}\NormalTok{splits, }\DataTypeTok{lst_recs =}\NormalTok{ lst_recs, }\DataTypeTok{lst_mods =}\NormalTok{ lst_mods)) }
+\NormalTok{  cv_df <-}\StringTok{ }\NormalTok{cv_df }\OperatorTok{%>%}\StringTok{ }\KeywordTok{pivot_longer}\NormalTok{(}\DataTypeTok{cols =}\NormalTok{ cv_df }\OperatorTok{%>%}\StringTok{ }\KeywordTok{select}\NormalTok{(}\OperatorTok{-}\KeywordTok{c}\NormalTok{(id,splits)) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{names}\NormalTok{() ,}
+                                 \DataTypeTok{names_to =} \StringTok{"recipe"}\NormalTok{, }\DataTypeTok{values_to =} \StringTok{"Accuracy"}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{select}\NormalTok{(id, recipe, Accuracy) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{separate}\NormalTok{(recipe, }\KeywordTok{c}\NormalTok{(}\StringTok{"rec"}\NormalTok{, }\StringTok{"model"}\NormalTok{), }\DataTypeTok{sep =}\StringTok{"}\CharTok{\textbackslash{}\textbackslash{}}\StringTok{."}\NormalTok{)}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{class-imbalance}{%
+\subsection{Class Imbalance}\label{class-imbalance}}
+
+\begin{table}[H]
+\centering\begingroup\fontsize{8}{10}\selectfont
+
+\begin{tabular}{lr}
+\toprule
+category & n\\
+\midrule
+\rowcolor{gray!6}  cakes\_cupcakes\_snack\_cakes & 3786\\
+candy & 7584\\
+\rowcolor{gray!6}  chips\_pretzels\_snacks & 3680\\
+chocolate & 3772\\
+\rowcolor{gray!6}  cookies\_biscuits & 5284\\
+\addlinespace
+popcorn\_peanuts\_seeds\_related\_snacks & 7645\\
+\bottomrule
+\end{tabular}
+\endgroup{}
+\end{table}
+
+As you can see the classes are not balanced (at a light level), and if I
+want to use accuracy metric for assessing the performance of the models
+- I should handle this.
+
+\textbf{Strategies:} Upsample, Downsample, Smot
+
+I will start by creating some features just to run the models at this
+stage, later I'll examine each of the strategies in depth.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# For nutrients cols: function to check if we have more then 5% values above 0}
+\NormalTok{is_remove <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(col) (}\KeywordTok{sum}\NormalTok{(col}\OperatorTok{>}\DecValTok{0}\NormalTok{) }\OperatorTok{/}\StringTok{ }\KeywordTok{length}\NormalTok{(col)) }\OperatorTok{<}\StringTok{ }\FloatTok{0.05}
+\NormalTok{nutr_to_rm <-}\StringTok{ }\KeywordTok{map_lgl}\NormalTok{(snacks_tr_imbalance }\OperatorTok{%>%}\StringTok{ }\KeywordTok{select}\NormalTok{(}\KeywordTok{starts_with}\NormalTok{(}\StringTok{"nutr_"}\NormalTok{)), is_remove)}
+\NormalTok{nutr_to_rm <-}\StringTok{ }\KeywordTok{names}\NormalTok{(nutr_to_rm[nutr_to_rm}\OperatorTok{==}\OtherTok{TRUE}\NormalTok{]) }\CommentTok{# keep the names of the nutrients to drop}
+\CommentTok{# let's create brand_size col:}
+\NormalTok{data_for_brand <-}\StringTok{ }\NormalTok{snacks_tr_imbalance }\OperatorTok{%>%}\StringTok{ }\KeywordTok{group_by}\NormalTok{(brand) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{count}\NormalTok{(}\DataTypeTok{sort=}\NormalTok{T) }
+\KeywordTok{kable}\NormalTok{ (}\KeywordTok{t}\NormalTok{( }\KeywordTok{quantile}\NormalTok{( data_for_brand }\OperatorTok{%>%}\StringTok{ }\KeywordTok{pull}\NormalTok{(n) , }\KeywordTok{c}\NormalTok{(}\FloatTok{0.1}\NormalTok{,}\FloatTok{0.25}\NormalTok{, }\FloatTok{0.5}\NormalTok{, }\KeywordTok{seq}\NormalTok{(}\FloatTok{0.7}\NormalTok{,}\DecValTok{1}\NormalTok{,.}\DecValTok{025}\NormalTok{) ) )))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{tabular}{r|r|r|r|r|r|r|r|r|r|r|r|r|r|r|r}
+\hline
+10\% & 25\% & 50\% & 70\% & 72.5\% & 75\% & 77.5\% & 80\% & 82.5\% & 85\% & 87.5\% & 90\% & 92.5\% & 95\% & 97.5\% & 100\%\\
+\hline
+1 & 1 & 1 & 2 & 2 & 2 & 2 & 2 & 3 & 3 & 4 & 4 & 6 & 7 & 13 & 43\\
+\hline
+\end{tabular}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{small_brands <-}\StringTok{ }\NormalTok{data_for_brand }\OperatorTok{%>%}\StringTok{ }\KeywordTok{filter}\NormalTok{(n }\OperatorTok{==}\DecValTok{1}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{pull}\NormalTok{(brand)}
+\NormalTok{medium_brands <-}\StringTok{ }\NormalTok{data_for_brand }\OperatorTok{%>%}\StringTok{ }\KeywordTok{filter}\NormalTok{(n }\OperatorTok{<}\StringTok{ }\DecValTok{11} \OperatorTok{&&}\StringTok{ }\NormalTok{n}\OperatorTok{>=}\DecValTok{2}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{pull}\NormalTok{(brand)}
+\CommentTok{# I'll choose 10 top ingredients (excluding sugar and salt) and create dummy vars for them}
+\KeywordTok{n_top_ingredient}\NormalTok{(}\DataTypeTok{data =} \KeywordTok{as_tibble}\NormalTok{(snacks_tr_imbalance), }\DataTypeTok{num =} \DecValTok{12}\NormalTok{,  }\DataTypeTok{by_category =} \OtherTok{FALSE}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{filter}\NormalTok{(}\OperatorTok{!}\StringTok{ }\NormalTok{(ingredient }\OperatorTok{%in%}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{"sugar"}\NormalTok{,}\StringTok{"salt"}\NormalTok{))) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{pull}\NormalTok{(ingredient) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{t}\NormalTok{() }\OperatorTok{%>%}\StringTok{ }\KeywordTok{kable}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{tabular}{l|l|l|l|l|l|l|l|l|l}
+\hline
+soy lecithin & corn syrup & citric acid & water & cocoa butter & niacin & riboflavin & folic acid & wheat flour & reduced iron\\
+\hline
+\end{tabular}
+
+I added dummies for these top words and also added \texttt{brand\_size}
+col according to what I defined above (See code)
+
+Recipes:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{rec_imb_upsample <-}\StringTok{ }\KeywordTok{recipe}\NormalTok{(category}\OperatorTok{~}\NormalTok{. , }\DataTypeTok{data =}\NormalTok{ snacks_tr_imbalance2) }\OperatorTok{%>%}
+\StringTok{  }\CommentTok{# We'll remove columns we now don't need:}
+\StringTok{  }\KeywordTok{step_rm}\NormalTok{(}\StringTok{"idx"}\NormalTok{,}\StringTok{"ingredients"}\NormalTok{,}\StringTok{"new_ingredient"}\NormalTok{, }\StringTok{"description"}\NormalTok{, }\StringTok{"serving_size_unit"}\NormalTok{, }\StringTok{"household_serving_fulltext"}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{step_rm}\NormalTok{(nutr_to_rm) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{step_meanimpute}\NormalTok{(household_serving_fulltext_num) }\OperatorTok{%>%}\StringTok{ }\CommentTok{# Impute average instead of NA's:}
+\StringTok{  }\KeywordTok{step_normalize}\NormalTok{(}\KeywordTok{all_numeric}\NormalTok{(), }\OperatorTok{-}\KeywordTok{starts_with}\NormalTok{(}\StringTok{"ing_"}\NormalTok{)) }\OperatorTok{%>%}\StringTok{ }\CommentTok{# normalize}
+\StringTok{  }\KeywordTok{step_unknown}\NormalTok{(}\KeywordTok{all_nominal}\NormalTok{(), }\OperatorTok{-}\KeywordTok{all_outcomes}\NormalTok{()) }\OperatorTok{%>%}\StringTok{ }\CommentTok{# unknown instead of NA's, other for uncomoon values:}
+\StringTok{  }\KeywordTok{step_other}\NormalTok{(}\KeywordTok{all_nominal}\NormalTok{(), }\DataTypeTok{other =} \StringTok{"other1"}\NormalTok{, }\DataTypeTok{threshold =} \FloatTok{0.01}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{step_novel}\NormalTok{(}\KeywordTok{all_nominal}\NormalTok{(), }\OperatorTok{-}\KeywordTok{all_outcomes}\NormalTok{()) }\OperatorTok{%>%}\StringTok{ }\CommentTok{# step novel for possible new categories in val set:}
+\StringTok{  }\KeywordTok{step_dummy}\NormalTok{(}\KeywordTok{all_nominal}\NormalTok{(), }\OperatorTok{-}\KeywordTok{all_outcomes}\NormalTok{(), }\DataTypeTok{one_hot =} \OtherTok{FALSE}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\CommentTok{# step dummy for categorical features:}
+\StringTok{  }\KeywordTok{step_upsample}\NormalTok{(category, }\DataTypeTok{over_ratio =} \DecValTok{1}\NormalTok{, }\DataTypeTok{seed=} \DecValTok{123}\NormalTok{) }\CommentTok{# upsample }
+\NormalTok{rec_imb_downsample <-}\StringTok{ }\KeywordTok{recipe}\NormalTok{(category}\OperatorTok{~}\NormalTok{. , }\DataTypeTok{data =}\NormalTok{ snacks_tr_imbalance2) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{step_rm}\NormalTok{(}\StringTok{"idx"}\NormalTok{,}\StringTok{"ingredients"}\NormalTok{,}\StringTok{"new_ingredient"}\NormalTok{, }\StringTok{"description"}\NormalTok{, }\StringTok{"serving_size_unit"}\NormalTok{, }\StringTok{"household_serving_fulltext"}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{step_rm}\NormalTok{(nutr_to_rm) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{step_meanimpute}\NormalTok{(household_serving_fulltext_num) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{step_normalize}\NormalTok{(}\KeywordTok{all_numeric}\NormalTok{(), }\OperatorTok{-}\KeywordTok{starts_with}\NormalTok{(}\StringTok{"ing_"}\NormalTok{)) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{step_unknown}\NormalTok{(}\KeywordTok{all_nominal}\NormalTok{(), }\OperatorTok{-}\KeywordTok{all_outcomes}\NormalTok{()) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{step_other}\NormalTok{(}\KeywordTok{all_nominal}\NormalTok{(), }\DataTypeTok{other =} \StringTok{"other1"}\NormalTok{, }\DataTypeTok{threshold =} \FloatTok{0.01}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{step_novel}\NormalTok{(}\KeywordTok{all_nominal}\NormalTok{(), }\OperatorTok{-}\KeywordTok{all_outcomes}\NormalTok{()) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{step_dummy}\NormalTok{(}\KeywordTok{all_nominal}\NormalTok{(), }\OperatorTok{-}\KeywordTok{all_outcomes}\NormalTok{(), }\DataTypeTok{one_hot =} \OtherTok{FALSE}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{step_downsample}\NormalTok{(category, }\DataTypeTok{under_ratio =} \DecValTok{1}\NormalTok{, }\DataTypeTok{seed=} \DecValTok{123}\NormalTok{)}
+\NormalTok{rec_imb_smote <-}\StringTok{ }\KeywordTok{recipe}\NormalTok{(category}\OperatorTok{~}\NormalTok{. , }\DataTypeTok{data =}\NormalTok{ snacks_tr_imbalance2) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{step_rm}\NormalTok{(}\StringTok{"idx"}\NormalTok{,}\StringTok{"ingredients"}\NormalTok{,}\StringTok{"new_ingredient"}\NormalTok{, }\StringTok{"description"}\NormalTok{, }\StringTok{"serving_size_unit"}\NormalTok{, }\StringTok{"household_serving_fulltext"}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{step_rm}\NormalTok{(nutr_to_rm) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{step_meanimpute}\NormalTok{(household_serving_fulltext_num) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{step_normalize}\NormalTok{(}\KeywordTok{all_numeric}\NormalTok{(), }\OperatorTok{-}\KeywordTok{starts_with}\NormalTok{(}\StringTok{"ing_"}\NormalTok{)) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{step_unknown}\NormalTok{(}\KeywordTok{all_nominal}\NormalTok{(), }\OperatorTok{-}\KeywordTok{all_outcomes}\NormalTok{()) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{step_other}\NormalTok{(}\KeywordTok{all_nominal}\NormalTok{(), }\DataTypeTok{other =} \StringTok{"other1"}\NormalTok{, }\DataTypeTok{threshold =} \FloatTok{0.01}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{step_novel}\NormalTok{(}\KeywordTok{all_nominal}\NormalTok{(), }\OperatorTok{-}\KeywordTok{all_outcomes}\NormalTok{()) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{step_dummy}\NormalTok{(}\KeywordTok{all_nominal}\NormalTok{(), }\OperatorTok{-}\KeywordTok{all_outcomes}\NormalTok{(), }\DataTypeTok{one_hot =} \OtherTok{FALSE}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{step_downsample}\NormalTok{(category, }\DataTypeTok{under_ratio =} \FloatTok{1.5}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{step_smote}\NormalTok{(category, }\DataTypeTok{over_ratio =} \DecValTok{1}\NormalTok{, }\DataTypeTok{seed =} \DecValTok{123}\NormalTok{)}
+\NormalTok{lst_rec_imb <-}\StringTok{ }\KeywordTok{list}\NormalTok{(}\StringTok{"upsample"}\NormalTok{ =}\StringTok{ }\NormalTok{rec_imb_upsample, }\StringTok{"downsample"}\NormalTok{ =}\StringTok{ }\NormalTok{rec_imb_downsample,}\StringTok{"smot"}\NormalTok{ =rec_imb_smote )}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# model list for imbalance stage}
+\NormalTok{mod_lst <-}\StringTok{ }\KeywordTok{list}\NormalTok{(}\StringTok{"mod_mult_reg_ridge"}\NormalTok{ =mod_mult_reg_ridge, }\StringTok{"mod_mult_reg_lasso"}\NormalTok{ =}\StringTok{ }\NormalTok{mod_mult_reg_lasso,}
+                \StringTok{"mod_rf"}\NormalTok{ =}\StringTok{ }\NormalTok{mod_rf ,  }\StringTok{"mod_xgboost"}\NormalTok{ =}\StringTok{ }\NormalTok{mod_xgboost,}
+                \StringTok{"mod_svm_rbf"}\NormalTok{ =}\StringTok{ }\NormalTok{mod_svm_rbf, }\StringTok{"mod_svm_poly"}\NormalTok{ =}\StringTok{ }\NormalTok{mod_svm_poly,  }\StringTok{"mod_knn"}\NormalTok{ =mod_knn)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{set.seed}\NormalTok{(}\DecValTok{123}\NormalTok{) }\CommentTok{# cv splits for imbalance }
+\NormalTok{cv_splits_imb <-}\StringTok{ }\KeywordTok{vfold_cv}\NormalTok{(snacks_tr_imbalance2,}\DataTypeTok{v=}\DecValTok{10}\NormalTok{, }\DataTypeTok{strata  =}\NormalTok{ category)}
+\CommentTok{# all combinations to consider}
+\NormalTok{all_comb_mods_recs <-}\StringTok{ }\KeywordTok{map_dfr}\NormalTok{(}\KeywordTok{names}\NormalTok{(lst_rec_imb), }\DataTypeTok{.f =}\NormalTok{all_comb_mod_rec  , }\DataTypeTok{names_models =} \KeywordTok{names}\NormalTok{(mod_lst)  )}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{acc_all_mod_rec_imb <-}\StringTok{ }\KeywordTok{acc_fun}\NormalTok{( }\DataTypeTok{df_mods_recs =}\NormalTok{ all_comb_mods_recs, }\DataTypeTok{lst_recs =}\NormalTok{ lst_rec_imb  ,}
+                                \DataTypeTok{lst_mods =}\NormalTok{ mod_lst , }\DataTypeTok{cv_df =}\NormalTok{cv_splits_imb ) }
+\end{Highlighting}
+\end{Shaded}
+
+\begin{center}\includegraphics{final_proj_again_files/figure-latex/unnamed-chunk-83-1} \end{center}
+
+The differences between the upsample and the smot seem pretty
+negligible. In addition, it seems that downsample is less preferable.
+
+\captionsetup[table]{labelformat=empty}
+
+\begin{table}[!htb]
+\centering
+\begin{minipage}{0.48\linewidth}
+\caption{\label{tab:1}Top 5 Recipes}
+
+\centering\begingroup\fontsize{9}{11}\selectfont
+
+\begin{tabular}{llr}
+\toprule
+model & rec & mean\_acc\\
+\midrule
+\rowcolor{gray!6}  mod\_xgboost & smot & 0.8444045\\
+mod\_xgboost & upsample & 0.8423966\\
+\rowcolor{gray!6}  mod\_rf & upsample & 0.8344075\\
+mod\_rf & smot & 0.8264138\\
+\rowcolor{gray!6}  mod\_xgboost & downsample & 0.8232025\\
+\bottomrule
+\end{tabular}
+\endgroup{}
+\end{minipage}
+\begin{minipage}{0.48\linewidth}
+\caption{\label{tab:2}Mean Acc by Recipe}
+\centering\begingroup\fontsize{9}{11}\selectfont
+
+\begin{tabular}{lr}
+\toprule
+rec & mean\_acc\\
+\midrule
+\rowcolor{gray!6}  smot & 0.8060638\\
+upsample & 0.8038871\\
+\rowcolor{gray!6}  downsample & 0.7976513\\
+\bottomrule
+\end{tabular}
+\endgroup{}
+\end{minipage}
+\end{table}
+
+Let's compare for each model between upsample to smot: (upsample- smot)
+
+\begin{table}[H]
+\centering\begingroup\fontsize{8}{10}\selectfont
+
+\begin{tabular}{lrl}
+\toprule
+model & pvalue & conf\_int\_5\%\\
+\midrule
+\rowcolor{gray!6}  mod\_mult\_reg\_ridge & 0.3410 & [ -0.0055 , 0.0144 ]\\
+mod\_mult\_reg\_lasso & 0.8524 & [ -0.0102 , 0.0086 ]\\
+\rowcolor{gray!6}  mod\_rf & 0.0317 & [ 9e-04 , 0.0151 ]\\
+mod\_xgboost & 0.6838 & [ -0.0128 , 0.0088 ]\\
+\rowcolor{gray!6}  mod\_svm\_rbf & 0.7121 & [ -0.0085 , 0.006 ]\\
+\addlinespace
+mod\_svm\_poly & 0.0047 & [ -0.0219 , -0.0054 ]\\
+\rowcolor{gray!6}  mod\_knn & 0.0605 & [ -0.0206 , 5e-04 ]\\
+\bottomrule
+\end{tabular}
+\endgroup{}
+\end{table}
+
+It can be seen that the differences between ``upsample'' to ``smot'' are
+quite small, and there are only 2 models for which the difference
+between the two strategies is significant - mod\_svm\_poly for which
+smot is better and mod\_rf in which upsample is better .\\
+\textbf{My Decision:} I'll proceed to the next step only with upsample.
+Also, I want at this point to get rid of KNN model since I don't think
+it will get better in the next stages and I want to save computation
+time.
+
+\hypertarget{numerical-features}{%
+\subsection{Numerical Features}\label{numerical-features}}
+
+\textbf{Strategies:}
+
+\textbf{Serving\_size \& nutrients \& Househould serving fulltext num:}
+
+\begin{itemize}
+\tightlist
+\item
+  Regular (no transformation)
+\item
+  Log trandformation
+\item
+  Trim top and/or bottom percentile (nutrients - only top)
+\end{itemize}
+
+Nutrients - I'll not trim the bottom edge, because I created these
+features by setting 0 for each product that did not contain the
+nutrient. (I want to know which nutrients have amount 0)
+
+\textbf{Ingredient Score:} As we saw in Part A, I created a variable
+that counts for each product - how many ingredients it contained from
+the list of the top n ingredients for each category.
+
+\begin{itemize}
+\tightlist
+\item
+  Include with 8,12,15 top ingredients by category
+\item
+  drop
+\end{itemize}
+
+\textbf{Note:} at the end I will normalize all the numeric cols (except
+for the binary cols).\\
+\textbf{NA's:} numerical - mean impute , Categorical - mode ipute
+(\emph{There are a very small number})
+
+I added again the variables I added in the previous step (see code)
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# add ingredient scores using n = 8,12,15  (using functions from part a)}
+\NormalTok{snacks_tr_numeric2 <-}\StringTok{ }\NormalTok{snacks_tr_numeric2 }\OperatorTok{%>%}\StringTok{ }\KeywordTok{inner_join}\NormalTok{(}\KeywordTok{create_scores}\NormalTok{(snacks_tr_numeric2,}\DecValTok{8}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{select}\NormalTok{(}\OperatorTok{-}\NormalTok{category), }\DataTypeTok{by =} \StringTok{"idx"}\NormalTok{ ) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{inner_join}\NormalTok{(}\KeywordTok{create_scores}\NormalTok{(snacks_tr_numeric2,}\DecValTok{12}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{select}\NormalTok{(}\OperatorTok{-}\NormalTok{category), }\DataTypeTok{by =} \StringTok{"idx"}\NormalTok{ ) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{inner_join}\NormalTok{(}\KeywordTok{create_scores}\NormalTok{(snacks_tr_numeric2,}\DecValTok{15}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{select}\NormalTok{(}\OperatorTok{-}\NormalTok{category), }\DataTypeTok{by =} \StringTok{"idx"}\NormalTok{ )}
+\NormalTok{trim_fun <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(col, }\DataTypeTok{bottom =}\NormalTok{ F) \{  }\CommentTok{# trim function: trim the highest and/or lowest values }
+\NormalTok{  q_}\DecValTok{99}\NormalTok{ <-}\StringTok{ }\KeywordTok{quantile}\NormalTok{(col, }\DataTypeTok{probs =} \FloatTok{.99}\NormalTok{) ; q_}\DecValTok{1}\NormalTok{ <-}\StringTok{ }\KeywordTok{quantile}\NormalTok{(col, }\DataTypeTok{probs =} \FloatTok{.01}\NormalTok{)}
+\NormalTok{  col <-}\StringTok{ }\KeywordTok{ifelse}\NormalTok{(col }\OperatorTok{>}\StringTok{  }\NormalTok{q_}\DecValTok{99}\NormalTok{, q_}\DecValTok{99}\NormalTok{, col)}
+  \ControlFlowTok{if}\NormalTok{(bottom)  col <-}\StringTok{ }\KeywordTok{ifelse}\NormalTok{(col}\OperatorTok{<}\NormalTok{q_}\DecValTok{1}\NormalTok{, q_}\DecValTok{1}\NormalTok{, col)}
+\NormalTok{  col  \}}
+\end{Highlighting}
+\end{Shaded}
+
+All the code for the recipes can be seen in the notebook.
+
+\begin{center}\includegraphics{final_proj_again_files/figure-latex/unnamed-chunk-98-1} \end{center}
+
+\captionsetup[table]{labelformat=empty}
+
+\textbf{Left:} Top 5 Recipes, \textbf{Right:} for the leading models-
+Xgb, RF, SVM: (see code - these two tables are relevant only for these 3
+models)
+
+\captionsetup[table]{labelformat=empty}
+
+\begin{center}\includegraphics[width=0.85\linewidth]{plots/numeric_3_tables_side_by_side} \end{center}
+
+\textbf{Conclusions:} It can be seen that there is no such significant
+difference between the strategies. It always seems better to include the
+score feature, but it is not entirely clear whether 8,12 or 15 is
+better. For leading models (rf, xgboost, svm\_rbf) it seems better to
+take a score of 15. Also, it seems that there is not much difference
+between the log, trim, regular strategy. trim is slightly higer then the
+others, so I decided to go with trim. I will also say goodbye to ridge
+and lasso models - since in the previous two stages they were not good
+and and I don't believe they will rise above xgboost or random forest.
+
+\hypertarget{categorical-features}{%
+\subsection{Categorical Features}\label{categorical-features}}
+
+I'll create new features:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{brand\_size} - classiy to ``small'', ``medium'' , ``large'',
+  ``huge'' brand by the number of products.
+\item
+  \texttt{n\_distinct\_cat} - classify brand by the number of (disticnt)
+  categories it sells:
+\item
+  Brand keywrods - classify by keywords of brand name (droping words
+  appears less then 50 times)
+\item
+  Serving fulltext keywords - classify using keywords I created at part
+  A + step\_other .01
+\item
+  Serving fulltext Feature Hashing (num trems - 10)
+\end{itemize}
+
+\textbf{Strategies:}:
+
+\begin{longtable}[]{@{}llll@{}}
+\toprule
+\begin{minipage}[b]{0.22\columnwidth}\raggedright
+Brand 1 - \texttt{brand\_size}\strut
+\end{minipage} & \begin{minipage}[b]{0.22\columnwidth}\raggedright
+Brand 2 - \texttt{n\_distinct\_cat}\strut
+\end{minipage} & \begin{minipage}[b]{0.22\columnwidth}\raggedright
+Brand 3 - keywords\strut
+\end{minipage} & \begin{minipage}[b]{0.22\columnwidth}\raggedright
+Serving Fulltext\strut
+\end{minipage}\tabularnewline
+\midrule
+\endhead
+\begin{minipage}[t]{0.22\columnwidth}\raggedright
+brand size\strut
+\end{minipage} & \begin{minipage}[t]{0.22\columnwidth}\raggedright
+numerical\strut
+\end{minipage} & \begin{minipage}[t]{0.22\columnwidth}\raggedright
+keywords\strut
+\end{minipage} & \begin{minipage}[t]{0.22\columnwidth}\raggedright
+keywords\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.22\columnwidth}\raggedright
+drop\strut
+\end{minipage} & \begin{minipage}[t]{0.22\columnwidth}\raggedright
+categorical\strut
+\end{minipage} & \begin{minipage}[t]{0.22\columnwidth}\raggedright
+drop\strut
+\end{minipage} & \begin{minipage}[t]{0.22\columnwidth}\raggedright
+hashing\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.22\columnwidth}\raggedright
+-\strut
+\end{minipage} & \begin{minipage}[t]{0.22\columnwidth}\raggedright
+drop\strut
+\end{minipage} & \begin{minipage}[t]{0.22\columnwidth}\raggedright
+-\strut
+\end{minipage} & \begin{minipage}[t]{0.22\columnwidth}\raggedright
+-\strut
+\end{minipage}\tabularnewline
+\bottomrule
+\end{longtable}
+
+Total of 24 strategies but due to considerations of time , I will run
+all the recipes with brand size and then I'll choose top recipes and
+I'll run them without brand\_size and check whther there is any
+difference.
+
+\textbf{My strategy for choosing the best words to include in the
+model:}\\
+Since we have more then 2 categories - I decided to use \emph{entropy}
+metric as a impurity measurment. For each of the words:\\
+- I'll calculate the number of appearance in each of the categories\\
+- Then I'll compute the entropy:
+\(\sum_{i=1}^{6} -log(\hat{p_{i}})\cdot \hat{p_i}\) where \(\Sigma\)
+denotes the sum over the categories, \(\hat{p}\) denotes the estimated
+frequency of the word in category i. This metric expresses the impurity
+(of the categories) for each word. - I'll get ``purity score'' for each
+of the words. The smaller it is - that means there is more impurity -
+meaning fewer categories or one very large category. Therefore, I would
+like to take all the words for which cross enrtopy is the smallest
+(\textasciitilde{} \textless1.5).\\
+In addition, I will look at words that appear at least 50-100 times in
+the data. \emph{(I used that \(0\cdot \log(0)=0\))}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# add the score for ingredient }
+\NormalTok{snacks_tr_categorical2 <-}\StringTok{ }\NormalTok{snacks_tr_categorical }\OperatorTok{%>%}\StringTok{ }\KeywordTok{inner_join}\NormalTok{(}\KeywordTok{create_scores}\NormalTok{(snacks_tr_categorical,}\DecValTok{15}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{select}\NormalTok{(}\OperatorTok{-}\NormalTok{category), }\DataTypeTok{by =} \StringTok{"idx"}\NormalTok{ ) }
+\CommentTok{# find the nutrients to remove: all the nutrients in which less then 5% are greater then 0}
+\NormalTok{nutr_to_rm <-}\StringTok{ }\KeywordTok{map_lgl}\NormalTok{(snacks_tr_categorical2 }\OperatorTok{%>%}\StringTok{ }\KeywordTok{select}\NormalTok{(}\KeywordTok{starts_with}\NormalTok{(}\StringTok{"nutr_"}\NormalTok{)), is_remove)}
+\NormalTok{nutr_to_rm <-}\StringTok{ }\KeywordTok{names}\NormalTok{(nutr_to_rm[nutr_to_rm}\OperatorTok{==}\OtherTok{TRUE}\NormalTok{])}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# a function that classify brand size according to the no. of products it sells}
+\NormalTok{classify_brand_size <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(data) \{}
+\NormalTok{  data_brand <-}\StringTok{ }\NormalTok{data }\OperatorTok{%>%}\StringTok{ }\KeywordTok{group_by}\NormalTok{(brand) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{count}\NormalTok{(}\DataTypeTok{sort=}\NormalTok{T) }
+\NormalTok{  quantiles <-}\StringTok{ }\KeywordTok{quantile}\NormalTok{( data_brand }\OperatorTok{%>%}\StringTok{ }\KeywordTok{pull}\NormalTok{(n) , }\KeywordTok{c}\NormalTok{(.}\DecValTok{5}\NormalTok{, }\FloatTok{.85}\NormalTok{,.}\DecValTok{99}\NormalTok{ ) )}
+\NormalTok{  small_brands <-}\StringTok{ }\NormalTok{data_brand }\OperatorTok{%>%}\StringTok{ }\KeywordTok{filter}\NormalTok{(n }\OperatorTok{<=}\StringTok{ }\NormalTok{quantiles[}\DecValTok{1}\NormalTok{]) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{pull}\NormalTok{(brand)}
+\NormalTok{  medium_brands <-}\StringTok{ }\NormalTok{data_brand }\OperatorTok{%>%}\StringTok{ }\KeywordTok{filter}\NormalTok{(n }\OperatorTok{>}\StringTok{ }\NormalTok{quantiles[}\DecValTok{1}\NormalTok{] }\OperatorTok{&&}\StringTok{ }\NormalTok{n }\OperatorTok{<=}\NormalTok{quantiles[}\DecValTok{2}\NormalTok{] ) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{pull}\NormalTok{(brand)}
+\NormalTok{  large_brands <-}\StringTok{ }\NormalTok{data_brand }\OperatorTok{%>%}\StringTok{ }\KeywordTok{filter}\NormalTok{(n }\OperatorTok{>}\StringTok{ }\NormalTok{quantiles[}\DecValTok{2}\NormalTok{] }\OperatorTok{&&}\StringTok{ }\NormalTok{n }\OperatorTok{<=}\StringTok{ }\NormalTok{quantiles[}\DecValTok{3}\NormalTok{]) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{pull}\NormalTok{(brand)}
+\NormalTok{  data }\OperatorTok{%>%}\StringTok{ }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{brand_size =} \KeywordTok{case_when}\NormalTok{(}
+\NormalTok{    brand }\OperatorTok{%in%}\StringTok{ }\NormalTok{small_brands }\OperatorTok{~}\StringTok{ "small"}\NormalTok{, brand }\OperatorTok{%in%}\StringTok{ }\NormalTok{medium_brands }\OperatorTok{~}\StringTok{ "medium"}\NormalTok{,}
+\NormalTok{    brand }\OperatorTok{%in%}\StringTok{ }\NormalTok{large_brands }\OperatorTok{~}\StringTok{ "large"}\NormalTok{, }\OtherTok{TRUE} \OperatorTok{~}\StringTok{ "huge"}\NormalTok{) )}
+\NormalTok{\}}
+\NormalTok{snacks_tr_categorical2 <-}\StringTok{ }\KeywordTok{classify_brand_size}\NormalTok{(snacks_tr_categorical2) }
+\CommentTok{# create 'n_distinct_cat' - for each brand: compute the number of }
+\CommentTok{# distinct categories and merge it to the data}
+\NormalTok{snacks_tr_categorical2 <-}\StringTok{  }\NormalTok{snacks_tr_categorical2 }\OperatorTok{%>%}\StringTok{  }\KeywordTok{group_by}\NormalTok{(brand) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{n_distinct_cat =} \KeywordTok{n_distinct}\NormalTok{(category)) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{inner_join}\NormalTok{(snacks_tr_categorical2)}
+\end{Highlighting}
+\end{Shaded}
+
+Let's create some help functions for handling text features:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# a function to count words by each category and compute entropy}
+\NormalTok{top_words_by_category_entropy <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(data, col) \{ }\CommentTok{# a function to }
+\NormalTok{  data }\OperatorTok{%>%}\StringTok{ }\KeywordTok{mutate_at}\NormalTok{(\{\{col\}\}, as.character) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{group_by}\NormalTok{(category) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{unnest_tokens}\NormalTok{(word, \{\{col\}\}) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{anti_join}\NormalTok{(stop_words) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{filter}\NormalTok{(}\OperatorTok{!}\KeywordTok{str_detect}\NormalTok{(word, }\DataTypeTok{pattern =} \StringTok{"[[:digit:]]"}\NormalTok{), }\CommentTok{# removes any words with numeric digits}
+    \OperatorTok{!}\KeywordTok{str_detect}\NormalTok{(word, }\DataTypeTok{pattern =} \StringTok{"[[:punct:]]"}\NormalTok{),      }\CommentTok{# removes any remaining punctuations}
+    \OperatorTok{!}\KeywordTok{str_detect}\NormalTok{(word, }\DataTypeTok{pattern =} \StringTok{"(.)}\CharTok{\textbackslash{}\textbackslash{}}\StringTok{1\{2,\}"}\NormalTok{),       }\CommentTok{# removes any words with 3 or more repeated letters}
+    \OperatorTok{!}\KeywordTok{str_detect}\NormalTok{(word, }\DataTypeTok{pattern =} \StringTok{"}\CharTok{\textbackslash{}\textbackslash{}}\StringTok{b(.)}\CharTok{\textbackslash{}\textbackslash{}}\StringTok{b"}\NormalTok{)        }\CommentTok{# removes any remaining single letter words}
+\NormalTok{  ) }\OperatorTok{%>%}\StringTok{  }\KeywordTok{count}\NormalTok{(word, }\DataTypeTok{sort =}\NormalTok{ T) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{group_by}\NormalTok{(word) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{pct =}\NormalTok{ n}\OperatorTok{/}\KeywordTok{sum}\NormalTok{(n), }\DataTypeTok{entropy =} \KeywordTok{entropy_fun}\NormalTok{(pct) , }\DataTypeTok{sum_n =} \KeywordTok{sum}\NormalTok{(n))}
+\NormalTok{\}}
+\CommentTok{# a function that returns the best words  that appears at least n times and with entropy < entropy_max}
+\NormalTok{order_words_by_entropy <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(data, col,  n_words, entrop_max) \{}
+\NormalTok{  data }\OperatorTok{%>%}\StringTok{ }\KeywordTok{filter}\NormalTok{(sum_n}\OperatorTok{>}\NormalTok{n_words,entropy}\OperatorTok{<}\NormalTok{entrop_max) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{arrange}\NormalTok{(entropy) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{    }\KeywordTok{distinct}\NormalTok{(\{\{col\}\}) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{pull}\NormalTok{(\{\{col\}\})  \}}
+\CommentTok{# plot the chosen words }
+\NormalTok{plot_chosen_words <-}\StringTok{  }\ControlFlowTok{function}\NormalTok{(data, col, order_words) \{}
+\NormalTok{  data  }\OperatorTok{%>%}\StringTok{ }\KeywordTok{filter}\NormalTok{(\{\{col\}\} }\OperatorTok{%in%}\StringTok{ }\NormalTok{order_words ) }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{ggplot}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x =} \KeywordTok{reorder}\NormalTok{(\{\{col\}\}, }\OperatorTok{-}\NormalTok{entropy),  }\DataTypeTok{y =}\NormalTok{ n , }\DataTypeTok{fill =}\NormalTok{ category)) }\OperatorTok{+}
+\StringTok{    }\KeywordTok{geom_bar}\NormalTok{(}\DataTypeTok{stat =} \StringTok{"identity"}\NormalTok{,}\DataTypeTok{position =} \StringTok{"fill"}\NormalTok{, }\DataTypeTok{color =} \StringTok{"white"}\NormalTok{, }\DataTypeTok{size =} \FloatTok{.3}\NormalTok{) }\OperatorTok{+}\StringTok{ }\KeywordTok{coord_flip}\NormalTok{() }\OperatorTok{+}\StringTok{ }\KeywordTok{theme_light}\NormalTok{() }\OperatorTok{+}\StringTok{ }
+\StringTok{    }\KeywordTok{labs}\NormalTok{(}\DataTypeTok{x=}\StringTok{""}\NormalTok{, }\DataTypeTok{y=}\StringTok{""}\NormalTok{)}
+\NormalTok{\}}
+\CommentTok{# a function to create columns for the chosen words and merge it to the data}
+\NormalTok{merge_chosen_words <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(data, col, order_words, starter) \{}
+\NormalTok{  df_to_mrege <-}\StringTok{ }\NormalTok{data }\OperatorTok{%>%}\StringTok{ }\KeywordTok{mutate_at}\NormalTok{(\{\{col\}\}, as.character) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{unnest_tokens}\NormalTok{(word, \{\{col\}\}) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{anti_join}\NormalTok{(stop_words) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{filter}\NormalTok{(word }\OperatorTok{%in%}\StringTok{ }\NormalTok{order_words) }\OperatorTok{%>%}\StringTok{     }\CommentTok{# filter for only words in the wordlist}
+\StringTok{  }\KeywordTok{count}\NormalTok{(idx, word) }\OperatorTok{%>%}\StringTok{                 }\CommentTok{# count word useage by  ID}
+\StringTok{  }\KeywordTok{spread}\NormalTok{(word, n) }\OperatorTok{%>%}\StringTok{                 }\CommentTok{# convert to wide format}
+\StringTok{  }\KeywordTok{map_df}\NormalTok{(replace_na, }\DecValTok{0}\NormalTok{)   }\OperatorTok{%>%}\StringTok{  }\KeywordTok{rename_at}\NormalTok{(}\KeywordTok{vars}\NormalTok{(}\OperatorTok{-}\NormalTok{idx), }\OperatorTok{~}\NormalTok{(}\KeywordTok{paste0}\NormalTok{(starter, .))  )}
+\NormalTok{  data }\OperatorTok{%>%}\StringTok{ }\KeywordTok{left_join}\NormalTok{(df_to_mrege) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{mutate_at}\NormalTok{(}\KeywordTok{vars}\NormalTok{(}\KeywordTok{starts_with}\NormalTok{(starter)), }\OperatorTok{~}\NormalTok{(}\KeywordTok{ifelse}\NormalTok{(}\KeywordTok{is.na}\NormalTok{(.),}\DecValTok{0}\NormalTok{,.)))}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# create data with words & counts of brand + entropy}
+\NormalTok{brnd_words_dat <-}\StringTok{ }\KeywordTok{top_words_by_category_entropy}\NormalTok{(snacks_tr_categorical2, }\StringTok{"brand"}\NormalTok{)}
+\NormalTok{chosen_words <-}\StringTok{ }\KeywordTok{order_words_by_entropy}\NormalTok{(brnd_words_dat,word, }\DecValTok{50}\NormalTok{,}\DataTypeTok{entrop_max =}  \FloatTok{1.4}\NormalTok{)}
+\CommentTok{# let's take a look at the chosen words of brand:}
+\KeywordTok{plot_chosen_words}\NormalTok{(brnd_words_dat, word, chosen_words) }\OperatorTok{+}\StringTok{ }\KeywordTok{ggtitle}\NormalTok{(}\StringTok{"Brand's Best Words by Category"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{center}\includegraphics{final_proj_again_files/figure-latex/unnamed-chunk-108-1} \end{center}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# add the best words to the data}
+\NormalTok{snacks_tr_categorical3 <-}\StringTok{ }\KeywordTok{merge_chosen_words}\NormalTok{(}\DataTypeTok{data =}\NormalTok{snacks_tr_categorical2, }\DataTypeTok{col =} \StringTok{"brand"}\NormalTok{, }
+                                             \DataTypeTok{order_words =}\NormalTok{chosen_words, }\DataTypeTok{starter =} \StringTok{"brnd_"}\NormalTok{  )}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# fulltext - create "household serving update" using the keyword from part A}
+\NormalTok{snacks_tr_categorical4 <-}\StringTok{ }\KeywordTok{household_serving_update_fun}\NormalTok{(snacks_tr_categorical3,}
+\NormalTok{                                                       household_serving_fulltext, key_words_list )}
+\CommentTok{# prepare the data in order to find out the best words}
+\NormalTok{fulltext_keys_data <-}\StringTok{ }\NormalTok{snacks_tr_categorical4 }\OperatorTok{%>%}\StringTok{ }\KeywordTok{group_by}\NormalTok{(category, household_serving_update) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{count}\NormalTok{(}\DataTypeTok{sort =}\NormalTok{ T) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{group_by}\NormalTok{(household_serving_update) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{pct =}\NormalTok{ n}\OperatorTok{/}\KeywordTok{sum}\NormalTok{(n), }\DataTypeTok{entropy =} \KeywordTok{entropy_fun}\NormalTok{(pct) , }\DataTypeTok{sum_n =} \KeywordTok{sum}\NormalTok{(n)) }
+\CommentTok{# best words: entropy < 1.6 , appears more then 50 times.}
+\NormalTok{order_fulltext_keys_by_entropy <-}\StringTok{ }\KeywordTok{order_words_by_entropy}\NormalTok{(fulltext_keys_data,}\StringTok{"household_serving_update"}\NormalTok{, }\DecValTok{50}\NormalTok{,}\DataTypeTok{entrop_max =}  \FloatTok{1.6}\NormalTok{)}
+\CommentTok{# make everything that desn't belong to the selected word list "other"}
+\NormalTok{snacks_tr_categorical5 <-}\StringTok{ }\NormalTok{snacks_tr_categorical4 }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{mutate_at}\NormalTok{(}\StringTok{"household_serving_update"}\NormalTok{ ,}\OperatorTok{~}\NormalTok{(}\KeywordTok{ifelse}\NormalTok{(.}\OperatorTok{%in%}\NormalTok{order_fulltext_keys_by_entropy, . , }\StringTok{"other"}\NormalTok{)))}
+\end{Highlighting}
+\end{Shaded}
+
+The code for the recipes is available in the nootbook.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{set.seed}\NormalTok{(}\DecValTok{123}\NormalTok{)}
+\NormalTok{cv_splits_categorical <-}\StringTok{ }\KeywordTok{vfold_cv}\NormalTok{(snacks_tr_categorical5,}\DataTypeTok{v=}\DecValTok{10}\NormalTok{, }\DataTypeTok{strata  =}\NormalTok{ category)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{center}\includegraphics{final_proj_again_files/figure-latex/unnamed-chunk-118-1} \end{center}
+
+\captionsetup[table]{labelformat=empty}
+
+\begin{table}[!htb]
+\centering
+\begin{minipage}{0.48\linewidth}
+\caption{\label{tab:1}Top 5 Recipes}
+
+\centering\begingroup\fontsize{8}{10}\selectfont
+
+\begin{tabular}{lr}
+\toprule
+rec & mean\_acc\\
+\midrule
+\rowcolor{gray!6}  rec\_brndsize\_drop\_keyword\_keyword & 0.8601339\\
+rec\_brndsize\_ncat\_keyword\_keyword & 0.8591839\\
+\rowcolor{gray!6}  rec\_brndsize\_numeric\_keyword\_keyword & 0.8590317\\
+rec\_brndsize\_numeric\_drop\_keyword & 0.8589823\\
+\rowcolor{gray!6}  rec\_brndsize\_ncat\_drop\_keyword & 0.8583820\\
+\bottomrule
+\end{tabular}
+\endgroup{}
+\end{minipage}
+\begin{minipage}{0.48\linewidth}
+\caption{\label{tab:2}Mean Acc Brand2 Strategy}
+\centering\begingroup\fontsize{8}{10}\selectfont
+
+\begin{tabular}{lr}
+\toprule
+brand2 & mean\_acc\\
+\midrule
+\rowcolor{gray!6}  drop & 0.8543359\\
+numeric & 0.8542348\\
+\rowcolor{gray!6}  ncat & 0.8538854\\
+\bottomrule
+\end{tabular}
+\endgroup{}
+\end{minipage}
+\end{table}
+
+\captionsetup[table]{labelformat=empty}
+
+\begin{table}[!htb]
+\centering
+\begin{minipage}{0.48\linewidth}
+\caption{\label{tab:1}Mean Acc Fulltext Strategy}
+
+\centering\begingroup\fontsize{8}{10}\selectfont
+
+\begin{tabular}{lr}
+\toprule
+fulltext & mean\_acc\\
+\midrule
+\rowcolor{gray!6}  keyword & 0.8588829\\
+hashing & 0.8494211\\
+\bottomrule
+\end{tabular}
+\endgroup{}
+\end{minipage}
+\begin{minipage}{0.48\linewidth}
+\caption{\label{tab:2}Mean Acc Brand3 Strategy}
+\centering\begingroup\fontsize{8}{10}\selectfont
+
+\begin{tabular}{lr}
+\toprule
+brand3 & mean\_acc\\
+\midrule
+\rowcolor{gray!6}  keyword & 0.8549109\\
+drop & 0.8533931\\
+\bottomrule
+\end{tabular}
+\endgroup{}
+\end{minipage}
+\end{table}
+
+I would like to run the 3 top recipes \textbf{with and without}
+brand\_size, only with RF and Xgboost models: (See code)
+
+\begin{table}[H]
+\centering\begingroup\fontsize{8}{10}\selectfont
+
+\begin{tabular}{llr}
+\toprule
+brandsize & n\_cat & mean\_acc\\
+\midrule
+\rowcolor{gray!6}  drop & ncat & 0.8667283\\
+brndsize & drop & 0.8665321\\
+\rowcolor{gray!6}  drop & drop & 0.8659273\\
+brndsize & numeric & 0.8658277\\
+\rowcolor{gray!6}  brndsize & ncat & 0.8652275\\
+\addlinespace
+drop & numeric & 0.8651283\\
+\bottomrule
+\end{tabular}
+\endgroup{}
+\end{table}
+
+\textbf{Conclusions:}
+
+\begin{itemize}
+\tightlist
+\item
+  Hashing on description seems to be very bad.
+\item
+  I want to continue with keyword for brand and fulltext.
+\item
+  You can see that there is not much difference if we include
+  brand\_size \& n\_distinct\_cat or drop one or both of them. Anyway I
+  want to leave \texttt{brand\_size} for the next step when I add more
+  features. \texttt{n\_distinct\_cat} - did not bring so much
+  improvement, so I will throw it away.
+\end{itemize}
+
+\hypertarget{text-features}{%
+\subsection{Text Features}\label{text-features}}
+
+\textbf{Strategies}\\
+\textbf{Ingredients + Description:}
+
+\begin{itemize}
+\tightlist
+\item
+  keywords
+\item
+  hashing (description - num terms 2\^{}5 , ingredient - num terms
+  2\^{}8)
+\item
+  drop
+\end{itemize}
+
+Also, I want to reconsider at this point that I have most of the
+features the strategies: \textbf{upsample} or \textbf{smot}. Moreover,
+since I'm using now keyword from ingredient columne, I will consider
+whether or not to drop the \textbf{ingredient score} I created.
+
+\textbf{In addition - I decided to finally choose the keywords for
+fulltext, brand, description ingredient in this stage.}
+
+I'll add the selected features from previots steps (same code - see
+notebook)
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# Let's see what words to take for description:  (same functions as on brand col)}
+\NormalTok{description_words_dat2 <-}\StringTok{ }\KeywordTok{top_words_by_category_entropy}\NormalTok{(snacks_tr_txt5, }\StringTok{"description"}\NormalTok{)}
+\NormalTok{chosen_words_description <-}\StringTok{ }\KeywordTok{order_words_by_entropy}\NormalTok{(description_words_dat2 ,word, }\DecValTok{50}\NormalTok{,}\DataTypeTok{entrop_max =}  \FloatTok{1.6}\NormalTok{)}
+\CommentTok{# let's take a look at the top 15 chosen words for description}
+\KeywordTok{plot_chosen_words}\NormalTok{(description_words_dat2, word, chosen_words_description[}\DecValTok{1}\OperatorTok{:}\DecValTok{15}\NormalTok{]) }\OperatorTok{+}\StringTok{ }\KeywordTok{ggtitle}\NormalTok{(}\StringTok{"Description Top 15 Best Words"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{center}\includegraphics{final_proj_again_files/figure-latex/unnamed-chunk-133-1} \end{center}
+
+Wow! We found very good words!
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# add the best words to the data}
+\NormalTok{snacks_tr_txt6 <-}\StringTok{ }\KeywordTok{merge_chosen_words}\NormalTok{(}\DataTypeTok{data =}\NormalTok{snacks_tr_txt5, }\DataTypeTok{col =} \StringTok{"description"}\NormalTok{, }
+                                             \DataTypeTok{order_words =}\NormalTok{chosen_words_description, }\DataTypeTok{starter =} \StringTok{"descr_"}\NormalTok{  )}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# ingredient}
+\NormalTok{ingred_dat <-}\StringTok{ }\KeywordTok{n_top_ingredient}\NormalTok{(snacks_tr_txt6, }\DecValTok{2000}\NormalTok{)  }\OperatorTok{%>%}\StringTok{ }\KeywordTok{group_by}\NormalTok{(ingredient) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{pct =}\NormalTok{ n}\OperatorTok{/}\KeywordTok{sum}\NormalTok{(n), }\DataTypeTok{entropy =} \KeywordTok{entropy_fun}\NormalTok{(pct) , }\DataTypeTok{sum_n =} \KeywordTok{sum}\NormalTok{(n)) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{arrange}\NormalTok{(}\OperatorTok{-}\NormalTok{sum_n)}
+\NormalTok{chosen_ingred <-}\StringTok{ }\KeywordTok{order_words_by_entropy}\NormalTok{(ingred_dat,}\StringTok{"ingredient"}\NormalTok{, }\DecValTok{100}\NormalTok{ ,}\DataTypeTok{entrop_max =}  \FloatTok{1.5}\NormalTok{)}
+\CommentTok{# we have expressions and not words, so i can't ust merge_chosen_words:}
+\CommentTok{# I will use these two functions in order to create cols with the counts of thw chosen words:}
+\NormalTok{str_count_na <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(string, }\DataTypeTok{pattern =} \StringTok{""}\NormalTok{) \{}
+\NormalTok{  n <-}\StringTok{ }\KeywordTok{str_count}\NormalTok{(string, pattern)}
+  \KeywordTok{ifelse}\NormalTok{(}\KeywordTok{is.na}\NormalTok{(n), }\DecValTok{0}\NormalTok{, n)  \}}
+\NormalTok{count_words <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(essays, chosen_words) \{}
+\NormalTok{  counts <-}\StringTok{ }\KeywordTok{map}\NormalTok{(chosen_words, }\OperatorTok{~}\KeywordTok{str_count_na}\NormalTok{(essays, .x))}
+  \KeywordTok{names}\NormalTok{(counts) =}\StringTok{ }\NormalTok{janitor}\OperatorTok{::}\KeywordTok{make_clean_names}\NormalTok{(}\KeywordTok{str_c}\NormalTok{(}\StringTok{"ingrd_"}\NormalTok{, chosen_words))}
+\NormalTok{  counts  \}}
+\NormalTok{snacks_tr_txt7 <-}\StringTok{ }\NormalTok{snacks_tr_txt6 }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{bind_cols}\NormalTok{( }\KeywordTok{map_dfr}\NormalTok{(snacks_tr_txt6}\OperatorTok{$}\NormalTok{new_ingredient, count_words, }\DataTypeTok{chosen_words =}\NormalTok{chosen_ingred ) )}
+\end{Highlighting}
+\end{Shaded}
+
+The recipe code can be seen in the notebook.
+
+\begin{center}\includegraphics{final_proj_again_files/figure-latex/unnamed-chunk-144-1} \end{center}
+
+Hashing seems to be pretty bad, and drop less is better too. The four
+models are quite similar. svm and rf have greatly improved and even
+sometimes exceed xgboost.
+
+\textbf{Conclusions:} from looking at the \textbf{average} and
+\textbf{minimum} accuracy over the folds by recipe \& model I decided to
+continue with:
+
+\begin{itemize}
+\tightlist
+\item
+  SVM rbf: keywords, upsample, ingredient score
+\item
+  Random Forest: keywords, upsample, drop ingredient score
+\item
+  Xgboost - keywords, upsample, drop ingredient score
+\end{itemize}
+
+\textbf{More Desicions:} (1) I decided to drop svm poly model because on
+average (including previous steps) it is less good than the others
+(consideration of running time).\\
+(2) I'll save the selected words in this section for: barnd, fulltext,
+description, ingredient. I'll also use them in the final model. Here are
+the no. of words:
+
+\begin{table}[H]
+\centering\begingroup\fontsize{9}{11}\selectfont
+
+\begin{tabular}{r|r|r|r}
+\hline
+chosen\_word\_fulltext & chosen\_word\_brnd & chosen\_word\_descr & chosen\_word\_ingrd\\
+\hline
+\rowcolor{gray!6}  13 & 18 & 78 & 138\\
+\hline
+\end{tabular}
+\endgroup{}
+\end{table}
+
+I created \texttt{full\_features()} function that take care of adding
+all the relevant features I decided to add in the previous steps to the
+final model. (See code)
+
+\hypertarget{tuning}{%
+\subsection{Tuning}\label{tuning}}
+
+\textbf{From now on I will get rid of near zero variance nutrients using
+\texttt{step\_nzv()} instead of using \texttt{nutr\_to\_rm}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{snacks_tr_tunning2 <-}\StringTok{ }\KeywordTok{full_features}\NormalTok{(snacks_tr_tunning)}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{tuning-random-forest}{%
+\subsubsection{Tuning Random Forest}\label{tuning-random-forest}}
+
+Final recipe for Random Forest:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{final_rec_random_forest <-}\StringTok{  }\KeywordTok{recipe}\NormalTok{(category}\OperatorTok{~}\NormalTok{. , }\DataTypeTok{data =}\NormalTok{ snacks_tr_tunning2 }\OperatorTok{%>%}\StringTok{ }\KeywordTok{select}\NormalTok{(}\OperatorTok{-}\NormalTok{idx) ) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{step_nzv}\NormalTok{(}\KeywordTok{starts_with}\NormalTok{(}\StringTok{"nutr_"}\NormalTok{), }\DataTypeTok{freq_cut =} \DecValTok{99}\OperatorTok{/}\DecValTok{1}\NormalTok{)  }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{step_rm}\NormalTok{(}\KeywordTok{starts_with}\NormalTok{(}\StringTok{"score_"}\NormalTok{)) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{step_meanimpute}\NormalTok{(household_serving_fulltext_num) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{step_mutate}\NormalTok{(}\DataTypeTok{serving_size =}\KeywordTok{trim_fun}\NormalTok{(serving_size,}\DataTypeTok{bottom =}\NormalTok{ T)) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{step_mutate}\NormalTok{(}\DataTypeTok{household_serving_fulltext_num =}\KeywordTok{trim_fun}\NormalTok{(household_serving_fulltext_num,}\DataTypeTok{bottom =}\NormalTok{ T)) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{step_mutate_at}\NormalTok{(}\KeywordTok{starts_with}\NormalTok{(}\StringTok{"nutr_"}\NormalTok{),}\DataTypeTok{fn =}\NormalTok{  trim_fun) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{step_zv}\NormalTok{(}\KeywordTok{all_numeric}\NormalTok{()) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{step_normalize}\NormalTok{(}\KeywordTok{all_numeric}\NormalTok{(), }\OperatorTok{-}\KeywordTok{starts_with}\NormalTok{(}\StringTok{"score"}\NormalTok{), }\OperatorTok{-}\KeywordTok{starts_with}\NormalTok{(}\StringTok{"brnd_"}\NormalTok{),}
+                 \OperatorTok{-}\KeywordTok{starts_with}\NormalTok{(}\StringTok{"descr"}\NormalTok{), }\OperatorTok{-}\KeywordTok{starts_with}\NormalTok{(}\StringTok{"ingrd_"}\NormalTok{)) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{step_unknown}\NormalTok{(}\KeywordTok{all_nominal}\NormalTok{(), }\OperatorTok{-}\KeywordTok{all_outcomes}\NormalTok{()) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{step_other}\NormalTok{(}\KeywordTok{all_nominal}\NormalTok{(), }\DataTypeTok{other =} \StringTok{"other1"}\NormalTok{, }\DataTypeTok{threshold =} \FloatTok{0.01}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{step_novel}\NormalTok{(}\KeywordTok{all_nominal}\NormalTok{(), }\OperatorTok{-}\KeywordTok{all_outcomes}\NormalTok{()) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{step_dummy}\NormalTok{(}\KeywordTok{all_nominal}\NormalTok{(), }\OperatorTok{-}\KeywordTok{all_outcomes}\NormalTok{(), }\DataTypeTok{one_hot =} \OtherTok{FALSE}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{step_upsample}\NormalTok{(category, }\DataTypeTok{over_ratio =} \DecValTok{1}\NormalTok{, }\DataTypeTok{seed=} \DecValTok{123}\NormalTok{) }
+\end{Highlighting}
+\end{Shaded}
+
+I want to set the number of the tree to be 1000 since more trees are
+better for random forest (average of trees). Thus I will have to tune
+\texttt{mtry} and \texttt{min\_n}. I first tried a grid created by R to
+get an idea of which combination of parameters is good. Using the
+results, I chose values intelligently for another grid to test(see
+code). Here are the top 5 combinations:
+
+\begin{table}[H]
+\centering\begingroup\fontsize{8}{10}\selectfont
+
+\begin{tabular}{rrlrrr}
+\toprule
+mtry & min\_n & .metric & mean & n & std\_err\\
+\midrule
+\rowcolor{gray!6}  24 & 12 & accuracy & 0.9017271 & 10 & 0.0055661\\
+24 & 7 & accuracy & 0.9009784 & 10 & 0.0052872\\
+\rowcolor{gray!6}  43 & 7 & accuracy & 0.8999778 & 10 & 0.0053750\\
+43 & 12 & accuracy & 0.8997303 & 10 & 0.0054394\\
+\rowcolor{gray!6}  24 & 2 & accuracy & 0.8997284 & 10 & 0.0052255\\
+\bottomrule
+\end{tabular}
+\endgroup{}
+\end{table}
+
+\begin{center}\includegraphics{final_proj_again_files/figure-latex/unnamed-chunk-161-1} \end{center}
+
+I'll continue with the 2 best combinations for the model selection
+stage.
+
+\hypertarget{tuning-xgboost}{%
+\subsubsection{Tuning Xgboost}\label{tuning-xgboost}}
+
+Final recipe for xgboost same as for random forest.
+
+This model has many parameters to tune. I decided to stick with a number
+of 1000 trees, and do tuning on \texttt{tree\_depth}, \texttt{min\_n},
+\texttt{lose\_reduction}, \texttt{mtry}, \texttt{learn\_rate}. For some
+of the parameters I selected a range of values that I belive the optimal
+values will be in. Since these are a lot of parameters, I will use
+\texttt{grid\_latin\_hypercube} function which will create a grid for me
+that covers pretty much all of the options space.
+
+5 best combinations: (I'll continue with best two)
+
+\begin{table}[H]
+\centering\begingroup\fontsize{9}{11}\selectfont
+
+\begin{tabular}{rrrrrlrrr}
+\toprule
+mtry & min\_n & tree\_depth & learn\_rate & loss\_reduction & .metric & mean & n & std\_err\\
+\midrule
+\rowcolor{gray!6}  102 & 5 & 7 & 0.0318189 & 0.0000167 & accuracy & 0.9054847 & 10 & 0.0048402\\
+27 & 11 & 11 & 0.0182188 & 1.1146334 & accuracy & 0.9037297 & 10 & 0.0055170\\
+\rowcolor{gray!6}  81 & 13 & 8 & 0.0083149 & 0.0000008 & accuracy & 0.9009772 & 10 & 0.0062956\\
+23 & 6 & 12 & 0.0116911 & 0.0002708 & accuracy & 0.8997309 & 10 & 0.0053302\\
+\rowcolor{gray!6}  96 & 21 & 11 & 0.0442620 & 0.0000440 & accuracy & 0.8934877 & 10 & 0.0035938\\
+\bottomrule
+\end{tabular}
+\endgroup{}
+\end{table}
+
+\hypertarget{tuning-svm}{%
+\subsubsection{Tuning SVM}\label{tuning-svm}}
+
+The recipe is the same as the xgboost recipe, except that I now
+normalize all numeric variables (since it is SVM model) and used score
+ingredient. We have to tune \texttt{cost},\texttt{rbf\_sigma}. I chose
+range of values that I belive the optimal parameters will be in.
+
+`
+
+The results from the two grids I chose:
+
+\begin{center}\includegraphics{final_proj_again_files/figure-latex/unnamed-chunk-171-1} \end{center}
+
+5 best combinations: (I'll continue with best two)
+
+\begin{table}[H]
+\centering\begingroup\fontsize{9}{11}\selectfont
+
+\begin{tabular}{rrr}
+\toprule
+cost & rbf\_sigma & mean\_acc\\
+\midrule
+\rowcolor{gray!6}  2.691800 & 1e-03 & 0.8944759\\
+1.219014 & 1e-03 & 0.8939765\\
+\rowcolor{gray!6}  13.125366 & 1e-04 & 0.8922271\\
+28.983157 & 1e-04 & 0.8909790\\
+\rowcolor{gray!6}  5.943977 & 1e-03 & 0.8887246\\
+\bottomrule
+\end{tabular}
+\endgroup{}
+\end{table}
+
+I got from default parameters mean accuracy of 0.896 so I'll continue
+with default parameters and with the best combination from the grid.
+
+\hypertarget{model-selection}{%
+\subsection{MODEL SELECTION}\label{model-selection}}
+
+Now, I will run each of the models on the 2 best combinations from the
+tuning step, then I will choose the best.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{snacks_tr_selection2 <-}\StringTok{ }\KeywordTok{full_features}\NormalTok{(snacks_tr_selection) }\CommentTok{# data preparation}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# definition of final models:}
+\NormalTok{final_mod_rf_}\DecValTok{1}\NormalTok{ <-}\StringTok{ }\KeywordTok{rand_forest}\NormalTok{( }\DataTypeTok{mtry =} \DecValTok{24}\NormalTok{, }\DataTypeTok{trees =} \DecValTok{1000}\NormalTok{, }\DataTypeTok{min_n =} \DecValTok{12}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{set_mode}\NormalTok{(}\StringTok{"classification"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{set_engine}\NormalTok{(}\StringTok{"ranger"}\NormalTok{)}
+\NormalTok{final_mod_rf_}\DecValTok{2}\NormalTok{ <-}\StringTok{ }\KeywordTok{rand_forest}\NormalTok{( }\DataTypeTok{mtry =}\DecValTok{24}\NormalTok{, }\DataTypeTok{trees =} \DecValTok{1000}\NormalTok{, }\DataTypeTok{min_n =} \DecValTok{7}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{set_mode}\NormalTok{(}\StringTok{"classification"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{set_engine}\NormalTok{(}\StringTok{"ranger"}\NormalTok{)}
+\NormalTok{final_mod_xgb_}\DecValTok{1}\NormalTok{ <-}\StringTok{ }\KeywordTok{boost_tree}\NormalTok{(}
+  \DataTypeTok{trees =} \DecValTok{1000}\NormalTok{, }\DataTypeTok{tree_depth =} \DecValTok{7}\NormalTok{, }\DataTypeTok{min_n =} \DecValTok{5}\NormalTok{ , }\DataTypeTok{loss_reduction =} \FloatTok{0.0000167}\NormalTok{, }\DataTypeTok{mtry =} \DecValTok{102}\NormalTok{ , }\DataTypeTok{learn_rate =} \FloatTok{0.0318}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{set_engine}\NormalTok{(}\StringTok{"xgboost"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{set_mode}\NormalTok{(}\StringTok{"classification"}\NormalTok{)}
+\NormalTok{final_mod_xgb_}\DecValTok{2}\NormalTok{ <-}\StringTok{ }\KeywordTok{boost_tree}\NormalTok{(}
+  \DataTypeTok{trees =} \DecValTok{1000}\NormalTok{, }\DataTypeTok{tree_depth =} \DecValTok{11}\NormalTok{, }\DataTypeTok{min_n =} \DecValTok{11}\NormalTok{ , }\DataTypeTok{loss_reduction =}\FloatTok{1.11}\NormalTok{, }\DataTypeTok{mtry =} \DecValTok{27}\NormalTok{ , }\DataTypeTok{learn_rate =}\FloatTok{0.0182}\NormalTok{)}\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{set_engine}\NormalTok{(}\StringTok{"xgboost"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{set_mode}\NormalTok{(}\StringTok{"classification"}\NormalTok{)}
+\NormalTok{final_mod_svm_}\DecValTok{1}\NormalTok{ <-}\StringTok{ }\KeywordTok{svm_rbf}\NormalTok{() }\OperatorTok{%>%}\StringTok{ }\KeywordTok{set_engine}\NormalTok{(}\StringTok{"kernlab"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{set_mode}\NormalTok{(}\StringTok{"classification"}\NormalTok{) }\CommentTok{#default}
+\NormalTok{final_mod_svm_}\DecValTok{2}\NormalTok{ <-}\StringTok{ }\KeywordTok{svm_rbf}\NormalTok{(}\DataTypeTok{cost =} \FloatTok{2.6918}\NormalTok{, }\DataTypeTok{rbf_sigma =} \FloatTok{0.001}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{set_engine}\NormalTok{(}\StringTok{"kernlab"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{set_mode}\NormalTok{(}\StringTok{"classification"}\NormalTok{)}
+\NormalTok{list_selection_models <-}\StringTok{ }\KeywordTok{list}\NormalTok{( }\CommentTok{# final list of models}
+  \StringTok{"final_mod_rf_1"}\NormalTok{ =}\StringTok{ }\NormalTok{final_mod_rf_}\DecValTok{1}\NormalTok{, }\StringTok{"final_mod_rf_2"}\NormalTok{ =}\StringTok{ }\NormalTok{final_mod_rf_}\DecValTok{2}\NormalTok{,}
+  \StringTok{"final_mod_xgb_1"}\NormalTok{ =}\StringTok{ }\NormalTok{final_mod_xgb_}\DecValTok{1}\NormalTok{, }\StringTok{"final_mod_xgb_2"}\NormalTok{ =}\StringTok{ }\NormalTok{final_mod_xgb_}\DecValTok{2}\NormalTok{,}
+  \StringTok{"final_mod_svm_1"}\NormalTok{ =}\StringTok{ }\NormalTok{final_mod_svm_}\DecValTok{1}\NormalTok{, }\StringTok{"final_mod_svm_2"}\NormalTok{ =}\StringTok{ }\NormalTok{final_mod_svm_}\DecValTok{2}\NormalTok{ )}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{list_selection_rec <-}\StringTok{ }\KeywordTok{list}\NormalTok{( }\CommentTok{# the final list of recipes:}
+ \StringTok{"final_rec_rf_xgb"}\NormalTok{ =}\StringTok{ }\NormalTok{final_rec_rf_xgb,}
+  \StringTok{"final_rec_rf_xgb"}\NormalTok{ =}\StringTok{ }\NormalTok{final_rec_rf_xgb ,}
+  \StringTok{"final_rec_svm_rbf"}\NormalTok{ =}\StringTok{ }\NormalTok{final_rec_svm_rbf )}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{table}[H]
+\centering\begingroup\fontsize{9}{11}\selectfont
+
+\begin{tabular}{llr}
+\toprule
+model & rec & mean\_acc\\
+\midrule
+\rowcolor{gray!6}  final\_mod\_xgb\_1 & final\_rec\_rf\_xgb & 0.9171569\\
+final\_mod\_xgb\_2 & final\_rec\_rf\_xgb & 0.9128704\\
+\rowcolor{gray!6}  final\_mod\_svm\_1 & final\_rec\_svm\_rbf & 0.9120611\\
+final\_mod\_svm\_2 & final\_rec\_svm\_rbf & 0.9118562\\
+\rowcolor{gray!6}  final\_mod\_rf\_1 & final\_rec\_rf\_xgb & 0.9087896\\
+\addlinespace
+final\_mod\_rf\_2 & final\_rec\_rf\_xgb & 0.9085871\\
+\bottomrule
+\end{tabular}
+\endgroup{}
+\end{table}
+
+I decided to continue to assessment with the best combination of each
+model, ie with \texttt{final\_mod\_rf\_1}, \texttt{final\_mod\_xgb\_1},
+\texttt{final\_mod\_svm\_1}.
+
+\hypertarget{assessment-of-the-final-models-on-the-test-set}{%
+\subsection{Assessment of The Final Models on the Test
+Set}\label{assessment-of-the-final-models-on-the-test-set}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{train_combained <-}\StringTok{ }\KeywordTok{full_features}\NormalTok{(snacks_tr) }
+\NormalTok{test_comb <-}\StringTok{ }\KeywordTok{full_features}\NormalTok{(snacks_te)}
+\end{Highlighting}
+\end{Shaded}
+
+I made a recipe to get data with hashing to put into the neural network
+in Python(without upsample). See code.
+
+Let's compute the test error on the 3 chosen models (of xgboost and of
+random forest). See code.
+
+\begin{table}[H]
+\centering\begingroup\fontsize{9}{11}\selectfont
+
+\begin{tabular}{rrr}
+\toprule
+rf1 & xgb1 & svm1\\
+\midrule
+\rowcolor{gray!6}  0.9387209 & 0.9428166 & 0.9352552\\
+\bottomrule
+\end{tabular}
+\endgroup{}
+\end{table}
+
+Nice :) I'll continute with xgboost and random forest for prediction.
+
+\hypertarget{nueral-network}{%
+\subsection{Nueral Network}\label{nueral-network}}
+
+I'll \textbf{briefly} summarize what I did with the networks, and you
+can see \textbf{everything} in the jupyter notebook.
+
+I built:
+
+\begin{itemize}
+\tightlist
+\item
+  CNN neural with only the snack's images.
+\item
+  Combined Neural Network - images and final numerical data (with the
+  features I created at all stages - including hashwords)
+\item
+  Neural Network only with the final numerical data (no images)
+\end{itemize}
+
+Summarise Results:
+
+\begin{itemize}
+\tightlist
+\item
+  The images alone yielded an accuracy of \textasciitilde{} 60 percent
+  on the test set.
+\item
+  The images + data yielded an accuracy of \textasciitilde{} 93 percent.
+\item
+  The data alone yielded an accuracy of about \textasciitilde{} 93.
+\end{itemize}
+
+\textbf{Conclusion:} - using images \textbf{probably} don't yield higher
+accuracy, and don't contribute much to the prediction. I'll note that
+perhaps smarter network construction and proper handling of both types
+of data would probably have yielded better results.
+
+The architecture of the combined neural network I built:
+
+\begin{center}\includegraphics[width=0.6\linewidth]{plots/comb_model_diagram} \end{center}
+
+\emph{I highly recommend looking at the jupyter notebook to see the
+complete code with which I built the network.}
+
+Notes: For building the networks, the validation I used was the same
+data as \texttt{snacks\_te}. A \textbf{better way} was to take 0.8 from
+the rest of the train (ie our \texttt{snacks\_tr}) and leave another 0.2
+for validation. Then, \textbf{after} building the network - check its
+performance on \texttt{snacks\_te} (as I did in the models in R). I
+didn't have time to make changes due to a very very long run time.
+\textbf{However}, the train error and the validation error have been
+pretty close in the last epochs so I am less afraid of overfitting.
+
+\textbf{However, I decided to try and submit the predictions from the
+model that combines the images and other features.}
+
+\hypertarget{building-the-final-models-for-prediction}{%
+\subsection{Building the Final Models for
+Prediction}\label{building-the-final-models-for-prediction}}
+
+Like I said, I'll submit predictions from my 3 best models - both
+xgboost combinations and the random forest model.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{food_test_final_model <-}\StringTok{ }\KeywordTok{full_features}\NormalTok{(food_test_initial, }\DataTypeTok{is_test =}\NormalTok{ T)}
+\NormalTok{food_train_final_model <-}\StringTok{ }\KeywordTok{full_features}\NormalTok{(food_train_initial)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{build_final_model <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(rec, model)  \{}
+\NormalTok{  final_prep =}\StringTok{ }\KeywordTok{prep}\NormalTok{(rec, food_train_final_model) }\CommentTok{# prep }
+\NormalTok{  train_baked =}\StringTok{ }\KeywordTok{bake}\NormalTok{(final_prep, food_train_final_model) }\CommentTok{# bake}
+\NormalTok{  test_baked =}\StringTok{ }\KeywordTok{bake}\NormalTok{(final_prep, food_test_final_model)  }
+  
+\NormalTok{  fit_final_mod =}\StringTok{ }\NormalTok{model }\OperatorTok{%>%}\StringTok{  }\KeywordTok{fit}\NormalTok{ (category }\OperatorTok{~}\NormalTok{., }\DataTypeTok{data =}\NormalTok{ train_baked) }\CommentTok{# fit}
+\NormalTok{  pred_test =}\StringTok{ }\NormalTok{fit_final_mod }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{predict}\NormalTok{(}\DataTypeTok{new_data =}\NormalTok{ test_baked, }\DataTypeTok{type =} \StringTok{"class"}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{idx =}\NormalTok{ food_test_final_model}\OperatorTok{$}\NormalTok{idx)}
+  
+  \KeywordTok{return}\NormalTok{(}\KeywordTok{list}\NormalTok{( }\StringTok{"results"}\NormalTok{ =}\StringTok{ }\NormalTok{pred_test, }\DataTypeTok{fit =}\NormalTok{ fit_final_mod ))}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\textbf{First Model: XGboost 1}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{fit_xgb1  <-}\StringTok{ }\KeywordTok{build_final_model}\NormalTok{(final_rec_rf_xgb ,final_mod_xgb_}\DecValTok{1}\NormalTok{)}
+\NormalTok{fit_xgb1}\OperatorTok{$}\NormalTok{results }\OperatorTok{%>%}\KeywordTok{select}\NormalTok{(idx, .pred_class) }\OperatorTok{%>%}\StringTok{  }\KeywordTok{write_csv}\NormalTok{(}\StringTok{"model101.csv"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\textbf{Second Model:Random Forest 1}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{fit_rf1 <-}\StringTok{ }\KeywordTok{build_final_model}\NormalTok{(final_rec_rf_xgb ,final_mod_rf_}\DecValTok{1}\NormalTok{)}
+\NormalTok{fit_rf1}\OperatorTok{$}\NormalTok{results }\OperatorTok{%>%}\StringTok{ }\KeywordTok{select}\NormalTok{(idx, .pred_class) }\OperatorTok{%>%}\StringTok{  }\KeywordTok{write_csv}\NormalTok{(}\StringTok{"model102.csv"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\textbf{Third Model: Neural Network}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{results_nn  <-}\StringTok{ }\KeywordTok{read.csv}\NormalTok{(}\StringTok{"final_nn_preds_03.csv"}\NormalTok{)}
+\NormalTok{results_nn }\OperatorTok{%>%}\StringTok{ }\KeywordTok{arrange}\NormalTok{(idx) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{select}\NormalTok{(idx, Prediction) }\OperatorTok{%>%}\StringTok{  }\KeywordTok{rename}\NormalTok{(}\StringTok{".pred_class"}\NormalTok{ =}\StringTok{ }\NormalTok{Prediction) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{write_csv}\NormalTok{(}\StringTok{"model103.csv"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{general-comments}{%
+\subsection{General Comments:}\label{general-comments}}
+
+\begin{itemize}
+\tightlist
+\item
+  I could at any stage move forward with the ideal recipe for each
+  model, but due to considerations of running time, I decided not to do
+  so.
+\item
+  It is clear to me that it is not necessarily correct to make the
+  decisions editively. So I tried to combine previous steps even after
+  that.
+\item
+  I could add another stage to take care of feature selection for the
+  final model - I didn't do that because anyway the models I chose
+  already know how to give more weights to better features and fewer
+  weights for not good features.
+\end{itemize}
+
+\end{document}

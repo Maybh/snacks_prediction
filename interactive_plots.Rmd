@@ -1,0 +1,355 @@
+---
+title: ' Final Project - DSApps '
+author: "May Ben Hamo"
+date: "`r Sys.Date()`"
+header-includes: 
+  - \usepackage{pdfpages} 
+geometry: margin=1.3cm
+output: 
+      html_document:
+        toc: TRUE
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(purrr)
+library(tidyverse)
+library(ggplot2) 
+library(gridExtra)
+library(knitr)
+library(kableExtra)
+library(reticulate)
+library(scales)
+library(ggalluvial)
+library(stringi) 
+library(treemapify)
+library(extrafont)
+library(tidytext)
+library(ggbeeswarm)
+library(data.table)
+library(RColorBrewer)
+library(naniar)
+library(forcats)
+library(themis)
+library(ranger)
+library(xgboost)
+library(kernlab)
+library(keras)
+library(kknn)
+library(glmnet)
+library(tidymodels)
+library(textrecipes)
+library(text2vec)
+library(janitor)
+library(tidyselect)
+library(tidymodels)
+library(plotly)
+```
+
+\newpage  
+
+# Exploratory Data Analysis  
+
+
+## Reading & Preparing the data
+
+```{r}
+food_train <- read.csv("data/food_train.csv")
+food_test <- read.csv("data/food_test.csv")
+food_nutrients <- read.csv("data/food_nutrients.csv")
+nutrients <- read.csv("data/nutrients.csv")
+```
+
+For convenient, I'll change the names of the categories only for part A: 
+```{r}
+levels(food_train$category) <- c("cakes","candy", "chips", "chocolate", "cookies", "popcorn" )
+```
+
+
+```{r, eval=FALSE, echo=F}
+train_folder <- "project_images/foods_final/train"
+img_df <- NULL
+for(folder in list.dirs(train_folder)[-1] ) {
+  print(paste("start working: ", folder, Sys.time()))
+  for(file in list.files(folder , pattern = ".jpg", full.names = TRUE) ) {
+    img_df <- rbind(img_df,   c( "idx" = str_extract(file, "[0-9]+") , "img_path" = file) ) 
+  }
+}
+img_df <- as.tibble(img_df) %>% mutate_at("idx", as.numeric)
+```
+
+```{r, echo=F}
+test_folder <- "project_images/foods_final/test"
+path_fun <- function(idx) paste0(test_folder,"/",{{idx}},".jpg") 
+img_df_test <- food_test %>% mutate("img_path" =  path_fun(idx) )
+```
+
+
+```{r, echo=FALSE}
+# write.csv(x = img_df, file = "img_train_df.csv", row.names = F) 
+```
+
+```{r, echo = FALSE}
+img_df <- read.csv("img_train_df.csv")
+img_df <- img_df %>% mutate_at("img_path", as.character)
+```
+
+```{r, warning=F, message=F, echo=F}
+food_train_images <- food_train %>% inner_join(img_df)
+food_test_images <- food_test %>% inner_join(img_df_test)
+```
+
+
+
+```{r, warning=FALSE, message=F, echo=F}
+#  create a data frame that unifies all 4 data sets relevant to the train/test set:  
+food_train_all <- food_nutrients %>% inner_join(food_train) %>%
+  inner_join(nutrients) %>% inner_join(img_df)
+
+food_test_all <- food_nutrients %>% inner_join(food_test) %>%
+  inner_join(nutrients) %>% inner_join(img_df_test)
+```
+
+
+
+```{r, message=F, warning=F, echo=F}
+food_train_with_nutrients =  food_nutrients %>%  left_join(food_train , by = "idx") %>%
+  pivot_wider(names_from = nutrient_id, values_from = amount, names_prefix = "nutr_") %>%
+  mutate_at(vars(starts_with("nutr_")), ~{if_else(is.na(.), 0, .)}) %>% inner_join(food_train)
+
+food_test_with_nutrients <- food_nutrients %>%  left_join(food_test , by = "idx") %>%
+  pivot_wider(names_from = nutrient_id, values_from = amount, names_prefix = "nutr_") %>%
+  mutate_at(vars(starts_with("nutr_")), ~{if_else(is.na(.), 0, .)}) %>% inner_join(food_test)
+```
+
+
+## Interactive Plots
+
+
+
+### Household Serving 
+
+
+
+```{r, message=F, warning=F, echo=F}
+top_words <- function(data, col, by_category = T) { # find top words of a columne 
+  data <- data %>% mutate_at({{col}}, as.character)
+  if(by_category) data <- data %>% group_by(category)  
+  data %>% unnest_tokens(word, {{col}}) %>%
+  anti_join(stop_words) %>%
+  filter(
+    !str_detect(word, pattern = "[[:digit:]]"), # removes any words with numeric digits
+    !str_detect(word, pattern = "[[:punct:]]"), # removes any remaining punctuations
+    !str_detect(word, pattern = "(.)\\1{2,}"),  # removes any words with 3 or more repeated letters
+    !str_detect(word, pattern = "\\b(.)\\b")    # removes any remaining single letter words
+  ) %>%  count(word, sort = T)  }
+```
+
+
+```{r, echo=F}
+# a list with key and values 
+key_words_list <- list("cookie" = c("cookie", "cookies", "coookie", "brownie", "brookie", "macaroon","macarons", "crackers", "cracker", "biscuit","waf",
+                           "truffle") ,
+                   "cake" = c("cake", "cupcake", "donut", "danish", "loaf", "pastry"),
+                   "pieces" = c("piece", "pieces", "pcs", "pcs.", "pc", "pc.", "psc", "portion"),
+                   "pie" = "pie",  "onz" = c("onz","oz"),
+                   "cup" = c("cup", "cups"),  "bar" = "bar" , "slice" = "slice",
+                   "package" = c("package", "pack", "pkg" , "pk", "box", "pkg.","kit" ),
+                   "lollipop" =  c("lol", "pop"), "bag" = "bag", "grm" ="grm" ,
+                   "container" = "container",  "pretzel" ="pretzel", "squares" ="square" ,
+                   "tbsp" =c("tbsp", "tsp"),  "chips" =c("chip","crisps"), "balls" = "ball",
+                   "section" = c("section", "block") , "candy" = "cand",    "egg"= "egg",
+                   "sticks"="stick" ,   "kernels" ="kernel" , "pouch" = "pouch",   "roll" = "roll")
+keywords_fun <- function(words) str_c(words, collapse = "|")
+key_words_list <- lapply(key_words_list, keywords_fun)
+
+# a function to add a new col to the df with the classify version of household_serving_fulltex
+household_serving_update_fun <- function(data, col, key_words_list) {
+  data %>% mutate(household_serving_update = case_when(
+  str_detect({{col}}, key_words_list$cookie ) ~ "cookie",
+  str_detect({{col}}, key_words_list$cake ) ~ "cake",
+  str_detect({{col}}, key_words_list$pieces) ~ "pieces",
+  str_detect({{col}}, key_words_list$pie) ~ "pie",
+  str_detect({{col}}, key_words_list$onz) ~ "onz",
+  str_detect({{col}}, key_words_list$cup) ~ "cup",
+  str_detect({{col}}, key_words_list$bar) ~ "bar",
+  str_detect({{col}}, key_words_list$slice) ~ "slice",
+  str_detect({{col}}, key_words_list$package) ~ "package",
+  str_detect({{col}}, key_words_list$lollipop) ~ "lollipop",
+  str_detect({{col}}, key_words_list$bag) ~ "bag",
+  str_detect({{col}}, key_words_list$grm) ~ "grm",
+  str_detect({{col}}, key_words_list$container) ~ "container",
+  str_detect({{col}}, key_words_list$pretzel) ~ "pretzel",
+  str_detect({{col}}, key_words_list$squares) ~ "squares",
+  str_detect({{col}}, key_words_list$tbsp) ~ "tbsp",
+  str_detect({{col}}, key_words_list$chips) ~ "chips",
+  str_detect({{col}}, key_words_list$balls) ~ "balls",
+  str_detect({{col}}, key_words_list$section) ~ "section",
+  str_detect({{col}}, key_words_list$candy) ~ "candy",
+  str_detect({{col}}, key_words_list$egg) ~ "egg",
+  str_detect({{col}}, key_words_list$sticks) ~ "sticks",
+  str_detect({{col}}, key_words_list$kernels) ~ "kernels",
+  str_detect({{col}}, key_words_list$pouch) ~ "pouch",
+  str_detect({{col}}, key_words_list$roll) ~ "roll",
+    TRUE ~ "other" ))}
+datafulltext <- household_serving_update_fun(food_train,household_serving_fulltext, key_words_list )
+```
+
+
+```{r, echo = F}
+data2_fulltext <- datafulltext %>% group_by(household_serving_update) %>% summarise(d_cat = n_distinct(category), n=n()) %>% arrange(-n) %>% head(15)
+kable(t( data2_fulltext %>% rename("key"=household_serving_update )), "latex", booktabs = T) %>%
+   kable_styling(latex_options = c("striped",  "scale_down"))
+```
+
+
+```{r, out.width = '70%', fig.align = "center", echo=F}
+entropy_fun <- function(vec) -sum(vec[vec>0]*log(vec[vec>0]) )
+data_plot_fulltext <- datafulltext %>% group_by(household_serving_update, category) %>% count(sort=T) %>% group_by(household_serving_update) %>%
+  mutate(n= n, sum_n = sum(n), pct = n/sum(n), entropy = entropy_fun(pct) )
+
+```
+
+
+```{r,, fig.align = "center", out.width = '100%', fig.align = "center", warning=FALSE}
+fulltext_plotly <- data_plot_fulltext  %>% mutate( pct = paste0((round(n/sum(n)*100, 2))," %")) %>%
+  ggplot(aes(x =reorder(household_serving_update, -entropy), y = n , fill = category ,
+             text = paste( "Houshold serving:", household_serving_update,"\n Category:", category,"\n Count", n, "\n Percentage", pct,
+                           "\n Total n", sum_n , "\n Entropy" , round(entropy,2) )))  +
+ geom_col(position = "fill", color = "white", size = .3)  + coord_flip() +  theme_light() + theme(text = element_text(size=10))  +
+  labs(x="", y="", title = "Keywords by Category", subtitle = "Ordered by Entropy (ascending)")  +
+  scale_y_continuous(labels = percent) 
+```
+
+
+```{r, echo=F}
+plotly::ggplotly(fulltext_plotly,tooltip = "text")
+```
+
+
+
+
+### Ingredients
+
+
+```{r, echo=F}
+flat_fun <- function(list)  str_flatten(unlist(list) , collapse = ",") # input: list output: string contains all the words, separate by ","
+# a function to split & clean the ingredients. output: ingredients split by ","
+split_by_ingredient <- function(data) {
+  data %>% 
+    mutate(new_ingredient = str_replace_all(ingredients,  "\\s*[.,]\\s*$", "")) %>% # if the last char is , or . - remove it  and remove unnecessary spaces
+    mutate(new_ingredient = str_replace_all(new_ingredient,  "\\s*[$+*]\\s*", "")) %>% 
+    mutate(new_ingredient = str_replace_all(new_ingredient,  "\\s*and/or\\s*", ",")) %>% # drop and/or
+    mutate(new_ingredient = str_replace_all(new_ingredient,  ",\\s*and\\s*", ",")) %>% # drop and if it is in the beggining of the expression
+    mutate(new_ingredient = str_replace_all(new_ingredient,  "\\s+[,.()\\[\\]{}]+an\\s+", ",")) %>% # replace by ","
+    mutate(new_ingredient= str_split(new_ingredient, "\\s*[&,.:()\\[\\]{}]+\\s*") ) %>% # split by ,.() and remove unnecessary spaces
+    mutate(new_ingredient =  map(new_ingredient, function(vec) {stri_remove_empty(unique(vec))}) ) %>%
+    mutate(new_ingredient = map_chr(.x = new_ingredient ,.f = flat_fun))
+}
+ingredients_data_train <- split_by_ingredient(food_train) ; ingredients_data_test <- split_by_ingredient(food_test)
+```
+
+
+```{r, echo=F}
+# a function to find the n top ingredients by category
+n_top_ingredient <- function(data,num, by_category = TRUE) {
+  data <- data %>% select(new_ingredient, category) %>%
+  unnest_tokens(word, new_ingredient, token = stringr::str_split , pattern = ",") # split words by ","
+  if(by_category)  data <- data %>%  group_by(category) # optional to fint top ingredients it by category
+  data %>% count(word, sort = TRUE) %>% rename(ingredient = word) %>% dplyr::slice(1:num)
+}
+top_12_ing <- n_top_ingredient(ingredients_data_train, 12)
+```
+
+
+
+```{r, out.width = '100%', fig.align = "center"}
+ingredients_plotly <- n_top_ingredient(ingredients_data_train, 1000)  %>% group_by(ingredient) %>%
+  mutate(pct = paste0((round(n/sum(n)*100, 2))," %") ,sum_n = sum(n)) %>%  filter(sum_n>3000)  %>%  
+  ggplot(aes(category,reorder(ingredient, sum_n)  ,fill= n,
+             text = paste("Ingredient: " , ingredient , "\n Category: " ,category, "\n Count: ", n, "\n Pct: " , pct, "\n Total: " , sum_n ))) + 
+  scale_fill_gradient2(low = "#F9EBEA", mid = "#CD6155", high = "#922B21", midpoint = 3000) + 
+  geom_tile( ) + labs(x="", y="", title = "Top Ingredients by Category",
+       subtitle = "Color by Count of Products Contain the Ingredient") + 
+  theme_bw() +  theme(axis.text = element_text(size = 8))
+```
+
+
+```{r}
+ggplotly(ingredients_plotly, tooltip = "text")
+```
+
+
+
+### Description
+
+
+```{r, message=F, warning=F, echo=F}
+descr_top_5 <- top_words(food_train, "description", by_category = T) %>% dplyr::slice(1:5)  %>%
+  unite(word_n, c("word", "n"), sep = ",n=") %>% group_by(category) %>%
+  group_map(~.) %>% bind_cols() %>% setNames(levels(food_train$category))
+```
+
+
+```{r, message=F, warning=F,out.width = '100%', fig.align = "center" }
+description_plotly <- top_words(food_train, "description", by_category = T)  %>% group_by(word) %>%
+  mutate(n= n, sum_n = sum(n), pct = n/sum(n), entropy = entropy_fun(pct) ) %>% 
+  mutate( pct = paste0((round(pct*100, 2))," %"))  %>% group_by(word) %>% filter(sum_n>750 ) %>% 
+  ggplot(aes(x = reorder(word, -entropy), y = n , fill = category ,
+             text = paste( "Description word:", word,"\n Category:", category,"\n Count", n, "\n Percentage", pct,
+                           "\n Total n", sum_n , "\n Entropy" , round(entropy,2) )))  +
+  geom_col(position = "fill", color = "white", size = .3)  + coord_flip() +  theme_light() +theme(text = element_text(size=10))  +
+  labs(x="", y="", title = "Descroption Common Words by Category", subtitle = "Ordered by Entropy (Ascending)")  +
+  scale_y_continuous(labels = percent) 
+```
+
+
+```{r}
+ggplotly(description_plotly, tooltip = "text")
+```
+
+
+### Food_nutrition & Nutrients 
+
+```{r, echo=F}
+nutr_data <- food_train_all %>% select(idx, nutrient_id, amount, category, name, unit_name, description, brand, img_path) 
+```
+
+What are the most common nutrients and their average amount? (top 5) 
+```{r, echo=F}
+kable(nutr_data %>% filter(amount > 0) %>% group_by(name) %>% 
+        summarise(n=n(), mean_amount = mean(amount)) %>% arrange(-n) %>% head(5), "latex", booktabs = T) %>%
+  kable_styling(latex_options = c("striped") , font_size = 8)
+```
+
+
+```{r, echo=F}
+nutr_data2 <- nutr_data %>% group_by(category ,unit_name, name) %>% filter(amount!=0) %>% summarise(mean_amount = mean(amount) ,n = n())
+order_nutrient <- nutr_data %>% filter(amount !=0) %>% count(name, sort = T) %>% arrange(n) %>% pull(name) 
+```
+
+
+```{r, out.width = '100%', fig.align = "center"}
+# For each of the units of measurement, I normalized the average amount to be between 0 and 1, so that they would be comparable.
+plotly_nutr <- nutr_data2 %>% group_by(unit_name) %>% 
+  mutate(normalize_mean_amount = mean_amount/max(mean_amount),name = factor(name, levels = order_nutrient)) %>%
+  ggplot(aes(x = category,y = name , fill= normalize_mean_amount,
+                  text = paste("Nutrient", name, "\n Category", category, "\n Average Amount", round(mean_amount,2),
+                               "\n Normalizes mean", normalize_mean_amount , "\n Count", n))) + 
+  geom_tile() + scale_fill_gradient(low="#CDFFF7", high="#007F5F", name = "")  + 
+  theme_bw() +  theme(axis.text = element_text(size = 6.5), text = element_text(size=9),
+    axis.text.x = element_text(size = 8), legend.position = "right") +
+  labs(title = "Normalized Average Amount of Food Nutrition by Snack's Category",
+       y = "Nutrient Name", x="", subtitle = "For each of the unit sizes - normalized average amount between 0 to 1", 
+      caption = "Sorted by the most common nutrient(on top), and goes down to the less common ones")
+```
+
+```{r, message=F ,warning=F}
+ggplotly(plotly_nutr, tooltip = "text")
+```
+
+
+
+
+
+

@@ -1,0 +1,3291 @@
+---
+title: ' Final Project - DSApps '
+author: "May Ben Hamo"
+date: "`r Sys.Date()`"
+header-includes: 
+  - \usepackage{pdfpages} 
+  - \usepackage{caption}
+  - \usepackage{float}
+geometry: margin=1.3cm
+output: 
+      pdf_document:
+        toc: TRUE
+        toc_depth: 3
+        keep_tex: yes
+        fig_caption: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(purrr)
+library(tidyverse)
+library(ggplot2) 
+library(gridExtra)
+library(knitr)
+library(kableExtra)
+library(reticulate)
+library(scales)
+library(ggalluvial)
+library(stringi) 
+library(treemapify)
+library(extrafont)
+library(tidytext)
+library(ggbeeswarm)
+library(data.table)
+library(RColorBrewer)
+library(naniar)
+library(forcats)
+library(themis)
+library(ranger)
+library(xgboost)
+library(kernlab)
+library(keras)
+library(kknn)
+library(glmnet)
+library(tidymodels)
+library(textrecipes)
+library(text2vec)
+library(janitor)
+library(tidyselect)
+library(vip)
+library(forcats)
+library(skimr)
+library(tune)
+```
+
+
+\newpage  
+
+```{r, include=F}
+colorize <- function(x, color) {
+  if (knitr::is_latex_output()) {
+    sprintf("\\textcolor{%s}{%s}", color, x)
+  } else if (knitr::is_html_output()) {
+    sprintf("<span style='color: %s;'>%s</span>", color, 
+      x)
+  } else x
+}
+```
+
+# Exploratory Data Analysis  
+
+
+## Reading & Preparing the data
+
+```{r}
+food_train <- read.csv("data/food_train.csv")
+food_test <- read.csv("data/food_test.csv")
+food_nutrients <- read.csv("data/food_nutrients.csv")
+nutrients <- read.csv("data/nutrients.csv")
+```
+
+For convenient, I'll change the names of the categories only for part A: 
+```{r}
+levels(food_train$category) <- c("cakes","candy", "chips", "chocolate", "cookies", "popcorn" )
+```
+
+
+**Images**  
+I created a df contain all the img_path and them merge it to the original data (the entire code available at the notebook)
+
+
+```{r, eval=FALSE, echo=F}
+train_folder <- "project_images/foods_final/train"
+img_df <- NULL
+for(folder in list.dirs(train_folder)[-1] ) {
+  print(paste("start working: ", folder, Sys.time()))
+  for(file in list.files(folder , pattern = ".jpg", full.names = TRUE) ) {
+    img_df <- rbind(img_df,   c( "idx" = str_extract(file, "[0-9]+") , "img_path" = file) ) 
+  }
+}
+img_df <- as.tibble(img_df) %>% mutate_at("idx", as.numeric)
+```
+
+```{r, echo=F}
+test_folder <- "project_images/foods_final/test"
+path_fun <- function(idx) paste0(test_folder,"/",{{idx}},".jpg") 
+img_df_test <- food_test %>% mutate("img_path" =  path_fun(idx) )
+```
+
+
+```{r, echo=FALSE}
+# write.csv(x = img_df, file = "saved_data/img_train_df.csv", row.names = F) 
+```
+
+```{r, echo = FALSE}
+img_df <- read.csv("saved_data/img_train_df.csv")
+img_df <- img_df %>% mutate_at("img_path", as.character)
+```
+
+```{r, warning=F, message=F}
+food_train_images <- food_train %>% inner_join(img_df)
+food_test_images <- food_test %>% inner_join(img_df_test)
+```
+
+
+**Nutrrients**  
+
+```{r, warning=FALSE, message=F}
+#  create a data frame that unifies all 4 data sets relevant to the train/test set:  
+food_train_all <- food_nutrients %>% inner_join(food_train) %>%
+  inner_join(nutrients) %>% inner_join(img_df)
+
+food_test_all <- food_nutrients %>% inner_join(food_test) %>%
+  inner_join(nutrients) %>% inner_join(img_df_test)
+```
+
+Add a columne for each of the nutrients, impute 0 if the product doesn't contain the nutrient: 
+
+```{r, message=F, warning=F}
+food_train_with_nutrients =  food_nutrients %>%  left_join(food_train , by = "idx") %>%
+  pivot_wider(names_from = nutrient_id, values_from = amount, names_prefix = "nutr_") %>%
+  mutate_at(vars(starts_with("nutr_")), ~{if_else(is.na(.), 0, .)}) %>% inner_join(food_train)
+
+food_test_with_nutrients <- food_nutrients %>%  left_join(food_test , by = "idx") %>%
+  pivot_wider(names_from = nutrient_id, values_from = amount, names_prefix = "nutr_") %>%
+  mutate_at(vars(starts_with("nutr_")), ~{if_else(is.na(.), 0, .)}) %>% inner_join(food_test)
+```
+
+
+## Quick View
+
+```{r, include=F}
+ skim_format(.levels = list(max_char = 5)) 
+```
+
+### Main Data 
+```{r}
+food_train %>% select_if(is.numeric) %>% skim_without_charts() %>% as_tibble() %>% select(-skim_type) %>%
+  rename_at(vars(starts_with("numeric")), ~(str_remove(.,"numeric.")))%>%
+  knitr::kable(digits = 3) %>%
+  kable_styling(latex_options = c("striped"), font_size =8)
+food_train %>% select_if(is.factor) %>% skim() %>% select(-factor.ordered, -skim_type)  %>% as_tibble() %>%
+  rename_at(vars(starts_with("factor")), ~(str_remove(.,"factor."))) %>% knitr::kable(digits =1) %>%
+  kable_styling(latex_options = c("striped"), font_size = 8)
+```
+
+A general summary of the train set can be seen in the table above. How many snacks in each category, how many companies there are, how many unique values for each factorial variable, etc. Also,  it can be seen that in the train set there are a total of 11 + 40 missing values for two factorial variables. This is a very small number :)
+
+Also, Almost no NA's in the test set:
+
+```{r}
+ miss_var_summary(food_test_images %>% select_if((~(sum(is.na(.)) > 0))) ) 
+```
+
+### Food nutrients + Nutrients 
+
+```{r}
+glimpse(food_train_all %>% select(nutrient_id,name,unit_name, amount )  )
+```
+
+```{r, warning=F, message=F}
+food_train_all %>% bind_rows(food_test_all %>% mutate("category" == "test")) %>% distinct(idx) %>% nrow()
+```
+We have all the observations (train&test) in the databases of the nutrients.  (31751 + 3525)
+
+Also, no missing values (train & test): 
+```{r, warning=F, message=F}
+food_train_all %>% bind_rows(food_test_all %>% mutate("category" == "test")) %>% 
+        select(unit_name, name, nutrient_id, amount) %>% select_if((~(sum(is.na(.)) > 0)))  %>% ncol()
+```
+
+
+
+
+## In-Depth Analysis of the Fatures
+
+**My main goal: investigate in depth the relationship of each of the features to the snack's category.**
+
+### Household Serving 
+
+As we saw in the quick view, we have 11 NA's in the train set, and there are 2206 distict values(train). There are a lot of levels, so I will now try to create a new feature using `household_serving_fulltext`:
+
+```{r,,warning=F, echo=FALSE}
+# kable(food_train %>% group_by(household_serving_fulltext) %>% count(sort=T) %>% head(5) , "latex", booktabs = T) %>%
+#   kable_styling(latex_options = c("striped"))
+```
+
+
+
+```{r, message=F, warning=F}
+top_words <- function(data, col, by_category = T) { # find top words of a col 
+  data <- data %>% mutate_at({{col}}, as.character)
+  if(by_category) data <- data %>% group_by(category)  
+  data %>% unnest_tokens(word, {{col}}) %>%
+  anti_join(stop_words) %>%
+  filter(
+    !str_detect(word, pattern = "[[:digit:]]"), # removes any words with numeric digits
+    !str_detect(word, pattern = "[[:punct:]]"), # removes any remaining punctuations
+    !str_detect(word, pattern = "(.)\\1{2,}"),  # removes any words with 3 or more repeated letters
+    !str_detect(word, pattern = "\\b(.)\\b")    # removes any remaining single letter words
+  ) %>%  count(word, sort = T)  }
+
+glimpse( top_words(food_train, "household_serving_fulltext", by_category = F) %>% arrange(-n) )
+```
+
+Using the above data, I identified keywords for creating `household_serving_update` as follows:
+
+```{r}
+# a list with key and values 
+key_words_list <- list("cookie" = c("cookie", "cookies", "coookie", "brownie", "brookie", "macaroon","macarons", "crackers", "cracker", "biscuit","waf",
+                           "truffle") ,
+                   "cake" = c("cake", "cupcake", "donut", "danish", "loaf", "pastry"),
+                   "pieces" = c("piece", "pieces", "pcs", "pcs.", "pc", "pc.", "psc", "portion"),
+                   "pie" = "pie",  "onz" = c("onz","oz"),
+                   "cup" = c("cup", "cups"),  "bar" = "bar" , "slice" = "slice",
+                   "package" = c("package", "pack", "pkg" , "pk", "box", "pkg.","kit" ),
+                   "lollipop" =  c("lol", "pop"), "bag" = "bag", "grm" ="grm" ,
+                   "container" = "container",  "pretzel" ="pretzel", "squares" ="square" ,
+                   "tbsp" =c("tbsp", "tsp"),  "chips" =c("chip","crisps"), "balls" = "ball",
+                   "section" = c("section", "block") , "candy" = "cand",    "egg"= "egg",
+                   "sticks"="stick" ,   "kernels" ="kernel" , "pouch" = "pouch",   "roll" = "roll")
+keywords_fun <- function(words) str_c(words, collapse = "|")
+key_words_list <- lapply(key_words_list, keywords_fun)
+```
+
+I created a function: `household_serving_update_fun` that classify each of the words in `household_serving_fulltext` according to `key_words_list` (The code is long so you can see it in the notebook)
+```{r, echo = F}
+# a function to add a new col to the df with the classify version of household_serving_fulltex
+household_serving_update_fun <- function(data, col, key_words_list) {
+  data %>% mutate(household_serving_update = case_when(
+  str_detect({{col}}, key_words_list$cookie ) ~ "cookie",
+  str_detect({{col}}, key_words_list$cake ) ~ "cake",
+  str_detect({{col}}, key_words_list$pieces) ~ "pieces",
+  str_detect({{col}}, key_words_list$pie) ~ "pie",
+  str_detect({{col}}, key_words_list$onz) ~ "onz",
+  str_detect({{col}}, key_words_list$cup) ~ "cup",
+  str_detect({{col}}, key_words_list$bar) ~ "bar",
+  str_detect({{col}}, key_words_list$slice) ~ "slice",
+  str_detect({{col}}, key_words_list$package) ~ "package",
+  str_detect({{col}}, key_words_list$lollipop) ~ "lollipop",
+  str_detect({{col}}, key_words_list$bag) ~ "bag",
+  str_detect({{col}}, key_words_list$grm) ~ "grm",
+  str_detect({{col}}, key_words_list$container) ~ "container",
+  str_detect({{col}}, key_words_list$pretzel) ~ "pretzel",
+  str_detect({{col}}, key_words_list$squares) ~ "squares",
+  str_detect({{col}}, key_words_list$tbsp) ~ "tbsp",
+  str_detect({{col}}, key_words_list$chips) ~ "chips",
+  str_detect({{col}}, key_words_list$balls) ~ "balls",
+  str_detect({{col}}, key_words_list$section) ~ "section",
+  str_detect({{col}}, key_words_list$candy) ~ "candy",
+  str_detect({{col}}, key_words_list$egg) ~ "egg",
+  str_detect({{col}}, key_words_list$sticks) ~ "sticks",
+  str_detect({{col}}, key_words_list$kernels) ~ "kernels",
+  str_detect({{col}}, key_words_list$pouch) ~ "pouch",
+  str_detect({{col}}, key_words_list$roll) ~ "roll",
+    TRUE ~ "other" ))}
+```
+
+
+```{r}
+datafulltext <- household_serving_update_fun(food_train,household_serving_fulltext, key_words_list )
+```
+
+
+```{r}
+cat("There are only", datafulltext %>% select(household_serving_update) %>% n_distinct(), "levels in the new feature")
+```
+
+How many products do we have in each of the keys I created? (I will show the 15 top levels) 
+```{r}
+# d_cat -  no. of distinct categories contains products with this key
+data2_fulltext <- datafulltext %>% group_by(household_serving_update) %>% summarise(d_cat = n_distinct(category), n=n()) %>% arrange(-n) %>% head(15)
+kable(t( data2_fulltext %>% rename("key"=household_serving_update )), "latex", booktabs = T) %>%
+   kable_styling(latex_options = c("striped"), font_size = 8)
+```
+Let's look at the distribution of the keywords by each of the categories (filter: keywords that appear at least 200 times):
+
+```{r, out.width = '70%', fig.align = "center"}
+entropy_fun <- function(vec) -sum(vec[vec>0]*log(vec[vec>0]) )
+data_plot_fulltext <- datafulltext %>% group_by(household_serving_update, category) %>% count(sort=T) %>% group_by(household_serving_update) %>%
+  mutate(n= n, sum_n = sum(n), pct = n/sum(n), entropy = entropy_fun(pct) )
+
+data_plot_fulltext %>% filter(sum_n>200) %>%
+  ggplot(aes(x =reorder(household_serving_update, -sum_n), y = n , fill = household_serving_update ))  +
+  geom_bar(stat = "identity", alpha = 0.5) +  facet_grid(category~., scales = "free_y") + theme_bw() +
+  theme(axis.text.x = element_text(angle=20, hjust=1),
+        text = element_text(size=10),legend.position = "") +
+  labs(x= "", y = "Number of Products", title = "Household Serving by Category & Keywords") 
+```
+Some keys are very popular in each of the categories, while some categories have one key that is very popular - like candy (pieces) ,chips (onz) and cookies (cookie). Also, there are categories that have many popular key like popcorn (onz, cup).
+
+
+Let's have a second look and focus on the distribution of the category for each keyword - I'll compute the pct of each word for each of the categories and also the **entropy**. (Entropy is a measure of the impurity of the distribution of the categories for each word. As the entropy gets smaller, it means that the word is more "pure", and thus it might be good for prediction. (I'll explain it later - in the modeling stage - page **22**)
+
+
+```{r,, fig.align = "center", fig.height=3, fig.width=7, warning=FALSE}
+fulltext_plotly <- data_plot_fulltext  %>% mutate( pct = paste0((round(n/sum(n)*100, 2))," %")) %>%
+  ggplot(aes(x =reorder(household_serving_update, -entropy), y = n , fill = category ,
+             text = paste( "Houshold serving:", household_serving_update,"\n Category:", category,"\n Count", n, "\n Percentage", pct,
+                           "\n Total n", sum_n , "\n Entropy" , round(entropy,2) )))  +
+ geom_col(position = "fill", color = "white", size = .3)  + coord_flip() +  theme_light() + theme(text = element_text(size=10))  +
+  labs(x="", y="", title = "Keywords by Category", subtitle = "Ordered by Entropy (ascending)")  +
+  scale_y_continuous(labels = percent) 
+fulltext_plotly
+```
+
+
+```{r, echo=F}
+#plotly::ggplotly(fulltext_plotly,tooltip = "text")
+```
+`r colorize("For interactive plot - See html file", "red")`    
+There are keywords that are very common only in one category (kernels, cakes, pie, etc), while there are keywords that are common in many categories like onz, grm. We even have one key (kernels) that appears only in the one category(popcorn), but it contains only 25 obs and I may drop it later.  **In conclusion, it seems like a very good feature to work with.**
+
+
+
+### Ingredients
+
+As we saw in the quick view, we have 40 NA's in the train set and 5 in the test set, and there are 26872 distict values(train).
+ 
+Let's find out which are the most common ingredients in each of the categories.
+
+```{r}
+# flat_fun -  input: list of words,  output: one string contains all the words, separate by ","
+flat_fun <- function(list)  str_flatten(unlist(list) , collapse = ",") 
+# a function to split & clean the ingredients. output: ingredients split by ","
+split_by_ingredient <- function(data) {
+  data %>% 
+    mutate(new_ingredient = str_replace_all(ingredients,  "\\s*[.,]\\s*$", "")) %>% # if the last char is , or . - remove it  and remove unnecessary spaces
+    mutate(new_ingredient = str_replace_all(new_ingredient,  "\\s*[$+*]\\s*", "")) %>% 
+    mutate(new_ingredient = str_replace_all(new_ingredient,  "\\s*and/or\\s*", ",")) %>% # drop and/or
+    mutate(new_ingredient = str_replace_all(new_ingredient,  ",\\s*and\\s*", ",")) %>% # drop and if it is in the beggining of the expression
+    mutate(new_ingredient = str_replace_all(new_ingredient,  "\\s+[,.()\\[\\]{}]+an\\s+", ",")) %>% # replace by ","
+    mutate(new_ingredient= str_split(new_ingredient, "\\s*[&,.:()\\[\\]{}]+\\s*") ) %>% # split by ,.() and remove unnecessary spaces
+    mutate(new_ingredient =  map(new_ingredient, function(vec) {stri_remove_empty(unique(vec))}) ) %>%
+    mutate(new_ingredient = map_chr(.x = new_ingredient ,.f = flat_fun))
+}
+ingredients_data_train <- split_by_ingredient(food_train) ; ingredients_data_test <- split_by_ingredient(food_test)
+```
+
+
+```{r}
+# a function to find n top ingredients (by category)
+n_top_ingredient <- function(data,num, by_category = TRUE) {
+  data <- data %>% select(new_ingredient, category) %>%
+  unnest_tokens(word, new_ingredient, token = stringr::str_split , pattern = ",") # split words by ","
+  if(by_category)  data <- data %>%  group_by(category) # optional to fint top ingredients it by category
+  data %>% count(word, sort = TRUE) %>% rename(ingredient = word) %>% dplyr::slice(1:num)         }
+top_12_ing <- n_top_ingredient(ingredients_data_train, 12)
+```
+
+Let's take a look at top 10 ingredients in general(NOT by category):
+```{r}
+kable(t( n_top_ingredient(ingredients_data_train, 12, by_category = F) ), "latex", booktabs = T) %>%
+  kable_styling(latex_options = c("striped",  "scale_down"))
+```
+
+Now, I want to look at the top 12 ingredients by category.  For each ingredient out of top 12 of each category - How many distinct categories contain it in the top 12?
+
+```{r, out.width = '50%', fig.align = "center"}
+data_plot_12_ing <- top_12_ing %>% group_by(ingredient) %>%
+  summarize(total_category = n_distinct(category), n=n(), categories = str_flatten(unique(category), collapse = ", "))
+data_plot_12_ing %>%  ggplot( aes(x= total_category)) +
+  geom_bar( stat="count", fill="#f68060", alpha=.6, width=.5) +
+  geom_text(aes(label = ..count..), stat= "count", hjust = +1.5) +
+  coord_flip() + theme_bw()+  scale_x_continuous( breaks = 1:6 ) +
+  labs(x = "No. of Categories", y= "No. of Top Ingredients", title = "No. of Categories Contains the Top 12 Ingredients by Category")
+```
+
+Most of the top ingredients by category appears only in 1 category, while just 3 of them appears in more than 3 categories:
+```{r}
+data_plot_12_ing %>% filter(n>3) %>% select(ingredient,n,categories) %>% arrange(-n)
+```
+
+Let's look at all the top 12 ingredient by category: 
+
+```{r, fig.height=3.5, fig.width=6, fig.align = "center"}
+top_12_ing %>% ggplot( aes(area = n , fill = category , label =  ingredient, subgroup = category)) +
+  scale_fill_brewer(palette = "Dark2") + 
+  geom_treemap() + geom_treemap_subgroup_border(colour = "white") +
+  geom_treemap_subgroup_text(place = "centre", grow = T, reflow = T, alpha = 0.5, colour = "white",family="sans", angle = 5) +
+  geom_treemap_text(family = "sans", colour = "white", place = "centre", reflow = T, grow = T) +
+  labs(x = "Area - Count of Products Contains the Ingredient", y = "", title="Top 12 Ingredients by Category") +
+  theme_bw() +  theme(text = element_text(family = "sans"), axis.text = element_text(size = 12),
+        plot.title = element_text(size = 15), legend.position = "") 
+```
+makes sense.
+
+Let's take a look at the heatmap of the top ingredients in general appear at least 3000 times:
+
+```{r, out.width = '75%', fig.align = "center"}
+ingredients_plotly <- n_top_ingredient(ingredients_data_train, 1000)  %>% group_by(ingredient) %>%
+  mutate(pct = paste0((round(n/sum(n)*100, 2))," %") ,sum_n = sum(n)) %>%  filter(sum_n>3000)  %>%  
+  ggplot(aes(category,reorder(ingredient, sum_n)  ,fill= n,
+             text = paste("Ingredient: " , ingredient , "\n Category: " ,category, "\n Count: ", n, "\n Pct: " , pct, "\n Total: " , sum_n ))) + 
+  scale_fill_gradient2(low = "#F9EBEA", mid = "#CD6155", high = "#922B21", midpoint = 3000) + 
+  geom_tile( ) + labs(x="", y="", title = "Top Ingredients by Category",
+       subtitle = "Color by Count of Products Contain the Ingredient") + 
+  theme_bw() +  theme(axis.text = element_text(size = 8))
+ingredients_plotly
+```
+`r colorize("For interactive plot - See html file", "red")`
+
+```{r, echo=F}
+# ggplotly(ingredients_plotly, tooltip = "text")
+```
+
+
+**Ingredient Score** - I want to take it one step further and try to think of a nice feature that can be taken out of the ingerdient variable. For example - calculate for each observation - how many of the 12 popular ingredients by category it contains, and according to this calculate a score for each category. Thus, I will receive for each obs. - a score to belong to each of the categories.
+
+```{r, message=F, warning=F}
+# a function to compute the score by category for a product
+# I did a change in score function later, But I leave it that way 
+# so that it will be reproducible. (I will discuss this later) 
+score_fixed <- function(vec1, ings) sum(str_detect(ings, vec1)) / length(vec1)
+
+score_by_cat_fixed <- function(top_by_category, product) {
+  if(is.na(product)) return(rep(NA,6)) #I will ignore NA's.
+  apply(X = top_by_category , MARGIN = 2, FUN = score_fixed, ings = product )
+}
+# input: df and n , output: df with the scores for each of the categories
+create_scores <- function(data,n) {
+  top_n_ing <- n_top_ingredient(data, n)
+  top_n_ing_by_category <-  data.frame( tapply(top_n_ing$ingredient, top_n_ing$category, list))
+  as_tibble(t(map_dfc( data$new_ingredient, .f = score_by_cat_fixed, top_by_category =top_n_ing_by_category ))) %>%
+  set_names(names(top_n_ing_by_category))  %>% rename_all(~(paste0("score_", {{n}}, "_" , .))) %>%
+    mutate(category = data$category, idx = data$idx) }
+ingredient_score_12 <-  create_scores(ingredients_data_train,12)
+```
+
+```{r}
+kable(ingredient_score_12 %>% group_by(category) %>% dplyr::slice(1) %>%  head(2), "latex", booktabs = T,  digits = 4) %>%
+  kable_styling(latex_options = c("striped"), , font_size = 8)
+``` 
+
+For example - the first obs. belongs to the cakes category, and its highest scores is for cookies/cakes.  The second obs. is from the candy category, and indeed its highest score is for candy.
+
+Let's take a deep look at the box plots for each of the scores by real category: 
+
+```{r,  out.width = '80%',  fig.align = "center"}
+ingredient_score_12 %>% select(-idx) %>%
+  pivot_longer(-category, names_to = "category_score", values_to = "score")  %>% drop_na() %>% 
+  group_by(category) %>% ggplot(aes(x=category_score, y= score, fill = category_score )) +
+  geom_boxplot(alpha = 0.2, outlier.colour = 'red', outlier.size = 1) + 
+  stat_summary(fun.y=mean, geom="point", shape=3, size=2, color="red", fill="red") +
+  facet_wrap(.~ category , nrow = 2) + coord_flip() + 
+  theme(legend.position = "", axis.text.x = element_text(size=8)) + labs(x= "", y = "Score", title = "Ingredeient Score by Real Category") 
+```
+
+As you can see, for any category - it seems that the relevant score does tend to have the highest distribution. A significant difference can be seen in the categories: candy and chips. There it seems that the score does indeed predict well the real category. **Looks like a nice feature to try when building the predictive model :)** 
+
+
+### Description
+
+I do not intend to explore in depth this variable, I will just examine which words are most common (top5) in each category.
+```{r, message=F, warning=F}
+descr_top_5 <- top_words(food_train, "description", by_category = T) %>% dplyr::slice(1:5)  %>%
+  unite(word_n, c("word", "n"), sep = ",n=") %>% group_by(category) %>%
+  group_map(~.) %>% bind_cols() %>% setNames(levels(food_train$category))
+```
+
+```{r}
+kable(descr_top_5, "latex", booktabs = T) %>% kable_styling(latex_options = c("striped", "scale down"), font_size = 8)
+```
+makes sense. 
+
+Let's look at a similar plot to the one we saw for `household serving fulltext`. I will look at words that appear at least 750 times. The words arranged by their value of entropy.
+
+```{r, message=F, warning=F, echo=F, fig.height=3, fig.width=7}
+description_plotly <- top_words(food_train, "description", by_category = T)  %>% group_by(word) %>%
+  mutate(n= n, sum_n = sum(n), pct = n/sum(n), entropy = entropy_fun(pct) ) %>% 
+  mutate( pct = paste0((round(pct*100, 2))," %"))  %>% group_by(word) %>% filter(sum_n>750 ) %>% 
+  ggplot(aes(x = reorder(word, -entropy), y = n , fill = category ,
+             text = paste( "Description word:", word,"\n Category:", category,"\n Count", n, "\n Percentage", pct,
+                           "\n Total n", sum_n , "\n Entropy" , round(entropy,2) )))  +
+  geom_col(position = "fill", color = "white", size = .3)  + coord_flip() +  theme_light() +theme(text = element_text(size=10))  +
+  labs(x="", y="", title = "Descroption Common Words by Category", subtitle = "Ordered by Entropy (Ascending)")  +
+  scale_y_continuous(labels = percent) 
+description_plotly
+```
+
+`r colorize("For interactive plot - See html file", "red")`
+
+We do have pretty strong words for prediction!
+
+
+```{r, echo=F}
+# ggplotly(description_plotly, tooltip = "text")
+```
+
+
+### Brand
+
+5 top brands:
+```{r}
+kable(food_train %>% group_by(brand) %>% count(brand, sort = T) %>% head(5), "latex", booktabs = T) %>%
+  kable_styling(latex_options = c("striped"), font_size =8)
+```
+
+```{r, out.width = '65%', fig.align = "center"}
+brand_data <- food_train %>% group_by(brand) %>% summarize( n=n() , total_category = n_distinct(category)) 
+kable(t(quantile(brand_data$n , probs = c(0.1,0.25,0.5,seq(0.7,1,0.025) ))) ,"latex", booktabs = T) %>% 
+  kable_styling(latex_options = c("striped"), font_size = 8)
+```
+
+As you can see: 50% of the brands sell just one product, 85% of what brands sell no more than 7 products.
+Only 2.5% of brands sell between 42 and 579 products.   
+Let's look at the distribution of the number of categories sold by brands.
+
+```{r}
+a1 <- brand_data %>% ggplot(aes(x= factor(total_category))) +
+  geom_bar(stat="count", fill="#f68060", alpha=.6, width=.6) + ylim(c(0,4100)) + 
+  geom_text(aes(label = ..count..), stat= "count", hjust = -.5, size = 4) + 
+  coord_flip() +  theme_bw() +
+  labs(x = "No. of Categories", y= "No. of Brands", title = "No. of Distinct Categories Sold by Brand") 
+```
+
+```{r,  out.width = '60%', fig.align = "center" }
+a2 <- brand_data %>%  mutate(brand_size = case_when(n >=100  ~ "large", (n > 2 & n < 100) ~ "medium" ,TRUE~ "small")) %>%
+  ggplot( aes(x= factor(total_category))) + 
+    geom_bar(stat="count",  fill="#f68060", alpha=.6, width=.6)  + 
+  facet_wrap(.~brand_size, scales = "free_x")+ 
+    geom_text(aes(label = ..count..),size =3.5  ,  stat= "count", hjust = +.8) +
+     coord_flip() + theme_bw()+ labs(x = "No. of Categories", y= "No. of Brands", title = "By Brand Size") 
+grid.arrange(a1,a2, nrow=2)
+```
+
+It can be seen that most of the brands have products from only one snack category, while a very small number of brands have products from all snack categories.
+I have divided the brands according to their size (no. of products each brand sells) - and it seems thatfor small brands - there are usually products from only one category, and for large brands the  opposite.  
+This trend can also be seen in the following plot:
+
+```{r, fig.align = "center", fig.height=3.8, fig.width=9, warning=FALSE}
+brand_data_plot <- food_train %>% group_by(category, brand) %>% summarise(n=n()) %>% arrange(-n) 
+top_brands <- food_train %>% group_by(brand) %>% count(sort=TRUE) %>% head(10) %>% pull(brand)
+small_brands <- food_train %>% group_by(brand) %>% count(sort=TRUE) %>% filter(n<10) %>%  pull(brand)
+plot_size_of_brand <- function(data, brands, is_small = F) {
+  p <- data %>% filter(brand %in% brands) %>% ggplot(aes(y = n, axis1 = brand, axis2 = category)) +
+     geom_alluvium(aes(fill = brand)) +  geom_stratum(width = 1/20, fill = "black", color = "white") +
+     geom_stratum(width = 1/20, fill = "black", color = "white") + 
+     geom_label(stat = "stratum", infer.label = TRUE, size = 2.8) + 
+     scale_x_discrete(limits = c("brand", "category"), expand = c(.05, .31)) +
+     scale_fill_brewer(palette = "RdYlBu") +  guides(fill = FALSE) +
+     labs(y = "", title = "Top 10 Brands by Category") 
+  if(is_small) p <- p + labs(title = "Small 10 Brands by Category (~10 products)")
+  p
+}
+p1 <- plot_size_of_brand(brand_data_plot, top_brands[1:10])
+p3 <- plot_size_of_brand(brand_data_plot, small_brands[1:10], T)
+grid.arrange(p1,p3, ncol = 2)
+```
+
+It therefore appears that brand size may be an important predictor variable.
+
+
+
+### Serving Size & Serving Size Unit 
+
+In the quick view of the data we saw summary of this feature.   
+There are only 8 obs. in which their serving size measured in "ml":  
+
+```{r, echo=F}
+kable(food_train %>% filter(serving_size_unit == "ml") %>% select(description,serving_size, category) , "latex", booktabs = T) %>%
+  kable_styling(latex_options = c("striped"), font_size = 8)
+```
+
+But in the test we have no observations in which unit_size = ml:
+```{r}
+sum(food_test$serving_size_unit == "ml")
+```
+Therefore, I am going to ignore the feature `serving_size_unit` in the modeling part since I don't belive I can learn something from only 8 obs. 
+
+Let's take a look at the density of serving size by category & size unit (I trimmed extreme values)
+
+```{r,, fig.align = "center", fig.height=3.3, fig.width=7, warning=FALSE, message=F}
+color_set <- c("#F1948A","#C39BD3", "#7FB3D5", "#76D7C4", "#F7DC6F", "#F0B27A")
+g_fun <- function(data, alpha ,unit_size) {
+  p <- data %>% filter(serving_size_unit == unit_size) %>%  group_by(category) %>% 
+    filter(serving_size >= quantile(serving_size, 0.01) & serving_size <=  quantile(serving_size, 0.99) )  %>% 
+    mutate(median_servig_size = median(serving_size)) %>%
+    ggplot(aes(x = reorder(category, -median_servig_size) , y = serving_size, color = category  )) +
+    geom_violin(scale="width", size=.5)  +  geom_quasirandom(alpha = alpha) + 
+    scale_color_manual(values = color_set) +   coord_flip() + 
+    theme_bw() +labs(title = unit_size, x ="",y="") +  theme(legend.position = "")
+  if(unit_size == "ml") p <- p + scale_y_continuous(breaks = c(0,200,400)) + scale_color_manual(values = c("#F1948A", "#C39BD3"))
+  p
+}
+g1 <- g_fun(food_train, 0.02, "g") ; g2 <- g_fun(food_train, 0.5, "ml")
+grid.arrange(g1,g2, ncol=2, widths = c(3.5,1),  top = "Serving Size Density By Category & Size Unit")
+```
+
+It seems that the size of cakes tends to be larger and has the largest variance. The distributions of chips and Popcorn are quite similar. The distributions of candy and chocolate are also relatively similar.
+
+
+
+### Food Nutrition & Nutrients 
+
+```{r}
+nutr_data <- food_train_all %>% select(idx, nutrient_id, amount, category, name, unit_name, description, brand, img_path) 
+```
+
+```{r}
+cat("There are", nutr_data %>% group_by(name) %>% distinct(name) %>% nrow(), "food nutrients")
+```
+
+What are the most common nutrients and their average amount? (top 5) 
+```{r}
+kable(nutr_data %>% filter(amount > 0) %>% group_by(name) %>% 
+        summarise(n=n(), mean_amount = mean(amount)) %>% arrange(-n) %>% head(5), "latex", booktabs = T) %>%
+  kable_styling(latex_options = c("striped") , font_size = 8)
+```
+
+
+```{r}
+nutr_data2 <- nutr_data %>% group_by(category ,unit_name, name) %>% filter(amount!=0) %>% summarise(mean_amount = mean(amount) ,n = n())
+order_nutrient <- nutr_data %>% filter(amount !=0) %>% count(name, sort = T) %>% arrange(n) %>% pull(name) 
+```
+
+Let's take a look at heatmap of nutrients by category. For each of the units of measurement, I normalized the average amount to be between 0 and 1, so that they would be comparable.
+
+```{r, out.width = '75%', fig.align = "center"}
+plotly_nutr <- nutr_data2 %>% group_by(unit_name) %>% 
+  mutate(normalize_mean_amount = mean_amount/max(mean_amount),name = factor(name, levels = order_nutrient)) %>%
+  ggplot(aes(x = category,y = name , fill= normalize_mean_amount,
+                  text = paste("Nutrient", name, "\n Category", category, "\n Average Amount", round(mean_amount,2),
+                               "\n Normalizes mean", normalize_mean_amount , "\n Count", n))) + 
+  geom_tile() + scale_fill_gradient(low="#CDFFF7", high="#007F5F", name = "")  + 
+  theme_bw() +  theme(axis.text = element_text(size = 6.5), text = element_text(size=8)) +
+  labs(title = "Normalized Average Amount of Food Nutrition by Snack's Category",
+       y = "Nutrient Name", x="", subtitle = "For each of the unit sizes - normalized average amount between 0 to 1", caption = "Sorted by the most common nutrient(on top), and goes down to the less common ones")
+plotly_nutr
+```
+`r colorize("For interactive plot - See html file", "red")`
+
+```{r, echo=F}
+# ggplotly(plotly_nutr, tooltip = "text")
+```
+
+Let's take a deep look at the 9 most popular nutrients:
+```{r, out.width = '95%', fig.align = "center"}
+nutr_data %>% filter(amount !=0, name %in% rev(order_nutrient)[1:9]) %>% group_by(category,name) %>%
+  ggplot(mapping = aes(x = category, y = amount, fill = category)) +
+  geom_boxplot(outlier.colour = 'red', outlier.size = .8, outlier.shape = 4, alpha=.5, show.legend = F) +
+  facet_wrap(name~., scales = "free_x", nrow = 3) + scale_fill_brewer(palette = "Set2") + 
+  theme_light() + coord_flip() + labs(x="", y= "Amount", title = "Top Nutrients Amount by Category")
+```
+
+There are products with very extreme values. Maybe it's typos, and maybe it's true. Let's explore some of them:
+
+**Total lipid(fat)**
+```{r}
+df2 <- nutr_data %>% filter(name == "Total lipid (fat)", amount>90) %>% select(idx, name, amount,unit_name, category, brand, description,img_path)
+```
+
+```{r, echo=FALSE}
+kable(df2 %>% select(-img_path), "latex", booktabs = T) %>%
+  kable_styling(latex_options = c("striped"), font_size = 8)
+```
+
+Let's take a look on them:  (*the order is according to the table from left to right*)
+
+```{r,out.width="9%",fig.show='hold',fig.align='center'}
+knitr::include_graphics(df2 %>% select(img_path)%>% pull())
+``` 
+
+Be careful with those snacks!! Very NOT healthy!
+
+**Protein** - We can see one product contain **100%** of protein! It is clearly NOT true...
+```{r}
+df3 <- nutr_data %>% filter(name == "Protein", amount==100) %>% select(idx, name, amount,unit_name, category, brand, description,img_path) 
+```
+
+```{r, echo=FALSE}
+kable(df3 %>% select(-img_path), "latex", booktabs = T) %>%
+  kable_styling(font_size = 7)
+```
+
+```{r,out.width="7%",fig.show='hold',fig.align='center' , echo = F}
+knitr::include_graphics(df3 %>% select(img_path)%>% pull())
+``` 
+
+And we can keep going like that but due to lack of space I will stop here :)
+
+
+
+### Images  
+I created in python histograms of the 3 colors of the "average image" by category (I calculated the average value for each of the pixels across all images of each of the categories). The entire code avalilabe at the notebook.   
+
+```{python, eval=F, echo = F}
+import os
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.image import imread
+import pandas as pd
+import cv2
+from datetime import datetime
+from tqdm import tqdm
+
+ROOT_FOLDER = r'C:\Users\maybe\DSApps\snacks_project\project_images\foods_final'
+folders_name = ["cakes_cupcakes_snack_cakes","candy","chips_pretzels_snacks",  "chocolate","cookies_biscuits", "popcorn_peanuts_seeds_related_snacks"]
+
+# a function to load the images
+def loadImages(imgs_df, folder_name):
+  for entry in os.scandir(f"{ROOT_FOLDER}/train/{folder_name}"):
+    file = entry.name
+    img_full_path = os.path.join(ROOT_FOLDER, 'train', folder_name, file)
+    img = imread(img_full_path)
+    img_resize = cv2.resize(img, (140, 140))
+    imgs_df = imgs_df.append({'idx': file[:-4], 'img': img_resize[:,:,:3], 'category': folder_name}, ignore_index=True)
+  return imgs_df
+
+# create df with cols: idx, img, category
+cols = ['idx', 'img', 'category']
+imgs_df = pd.DataFrame(columns=cols)
+for folder in folders_name:
+    imgs_df = loadImages(imgs_df, folder_name=folder)
+
+# create df of r,g,b colors of the average img by category
+def histogram_by_category():
+  category_hist = pd.DataFrame()
+  for group, imgs in tqdm(imgs_df.groupby('category')['img']):
+    mean_imgs = np.zeros_like(imgs.iloc[0], dtype=np.float64)
+    for im in imgs:
+      mean_imgs += im.astype(np.float64) / len(imgs)
+    # color = ('r','g','b')
+    category_hist[f'{group}.r'] = mean_imgs[:,:,0].flatten()
+    category_hist[f'{group}.g'] = mean_imgs[:,:,1].flatten()
+    category_hist[f'{group}.b'] = mean_imgs[:,:,2].flatten()
+
+  return category_hist
+
+category_hist_by_rgb = histogram_by_category()
+```
+
+```{r, echo=F}
+category_hist_by_rgb <- read.csv("saved_data/category_hist_by_rgb.csv")
+```
+
+```{r, message=F, warning=F, out.width = '80%', fig.align = "center"}
+mean_img_by_category <- category_hist_by_rgb %>% 
+  pivot_longer(everything(),names_to = "category_color", values_to = "mean_pixel") %>%
+  separate(category_color, c("category", "color"), sep = "\\." ) %>% mutate_at("category", as.factor)
+levels(mean_img_by_category$category) <-  c("cakes", "candy", "chips", "chocolate", "cookies", "popcorn" )
+  
+mean_img_by_category %>% ggplot(aes(x= mean_pixel, fill = color)) +
+  geom_histogram(alpha=0.4, color = "white", bins = 30,show.legend = FALSE) +
+  facet_wrap(.~category, nrow =2) + xlim(0,255) +
+  scale_fill_manual(values = c("blue", "green", "red")) + theme(legend.position = "none") + theme_bw() +
+  labs(title ="Colors Histograms of the Average Image By Category", x="" )
+```
+
+Indeed there are differences, some larger and some less, between the color histograms of the "average image" in each of the categories. Although it doesn't seem that on average there is any noticeable trend of difference between the images of different categories.
+
+
+
+*Note: Page numbering starts from 2, So I'm still ok :)* 
+\newpage
+
+# Modeling
+
+## Strategy  
+
+I'll split the data into six parts:
+
+1. **Class Imbalance**
+2. **Numerical Features** - Nutrients, Serving Size, Ingredient Score, Household Service fulltext num
+3. **Categorical Features** - Brand, Unit Size - *as I said before, I'll ignore this feature.*, Serving Fulltext
+4. **Text Features** - Ingredients, Description 
+5. **Model Tunning**
+6. **Model Selection** - Select the best model out of all the models. 
+
+
+
+**Missing data**- As we saw in part A, we have a small no. of NA's both in the train set and in the test set. Also, all the NA's are in categorical features.
+I decided anyway to keep these observations and to use `step_unknown` or mode/mean impute. Therefore, I do not intend to allocate data for the treatment of missing values since even if there's a trend regarding NA's since it's such a small number, you can not learn anything from it.
+
+**Intercations** - Most of the models that I am considering is taking care of intercations (neural networks, tree based models, svm), so I don't allocate data to consider possible interactions.
+
+**Nutrients Data set** - I decided to insert each nutrient individually using the columns I created ("nutr_"), and I intend to normalize them all. Therefore I do not want to include  `unit_name` in my models since if all the nutrients are normalized and inserted separately - it has no meaning.
+ 
+
+### Models
+I'll consider the following models: Multinomial regression lasso, Multinomial regression ridge, SVM rbf, SVM poly, Random Forest, Xgboost, KNN, Nueral Networks.  
+
+*Due to lots of problems running `keras` and `tensorflow` using `reticulate`, I decided that I would run the network models after making all the decisions (ie in the final stage of model selection) in Python.*
+
+
+### Initial Data + NA's
+
+The data (train + test) I will start with will also include the columns I created for each nutrient, the clean ingredients column, and another column I created from the numbers in the "household_serving_fulltext" column. 
+
+```{r, eval=F}
+food_train_initial <- food_train_with_nutrients %>% mutate(
+  new_ingredient = ingredients_data_train$new_ingredient,
+  household_serving_fulltext_num = as.numeric(str_extract(household_serving_fulltext, pattern = "^\\d+\\.?\\d*")))
+food_test_initial <- food_test_with_nutrients %>% mutate(
+  new_ingredient = ingredients_data_test$new_ingredient,
+  household_serving_fulltext_num = as.numeric(str_extract(household_serving_fulltext, pattern = "^\\d+\\.?\\d*")))
+```
+
+```{r, echo=F, eval=F}
+# let's return the original levels of category:
+levels(food_train_initial$category) <- levels(food_train$category)
+```
+
+
+As we saw in Part A, there are very few NAs. We saw that in the `brand` column in the test set there is one NA - I will replace it with "not a branded item":
+
+```{r, eval=F}
+food_test_initial <- food_test_initial %>% mutate("brand"=  fct_explicit_na(brand, "not a branded item"))
+```
+As I said, I'll deal with the rest of the NA's already through the use of the recipes.
+
+```{r, echo=F}
+# write.csv(food_train_initial, "saved_data/food_train_initial_modeling.csv", row.names = F)
+# write.csv(food_test_initial, "saved_data/food_test_initial_modeling.csv", row.names = F)
+food_train_initial <- read.csv("saved_data/food_train_initial_modeling.csv")
+food_test_initial <- read.csv("saved_data/food_test_initial_modeling.csv")
+```
+
+
+
+### Spliting the data 
+
+The split was done as follows (code in notebook): 
+```{r, echo=F}
+set.seed(123)
+# train + test split
+food_snacks_split <- initial_split(food_train_initial,strata = category, prop = 0.8)
+snacks_tr <- training(food_snacks_split)
+set.seed(123)
+snacks_te <- testing(food_snacks_split)
+# imbalance split
+set.seed(123)
+snacks_imbalance_split <- initial_split(snacks_tr, strata = category, prop = (2500 - 1)/nrow(snacks_tr))
+snacks_tr_imbalance <- training(snacks_imbalance_split)
+snacks_train <- testing(snacks_imbalance_split)
+# Numerical Split
+set.seed(123)
+snacks_numerical_split <- initial_split(snacks_train, strata = category, prop = (4000 - 1)/nrow(snacks_train))
+snacks_tr_numeric <- training(snacks_numerical_split)
+snacks_train <- testing(snacks_numerical_split)
+# Categorical Split
+set.seed(123)
+snacks_categorical_split <- initial_split(snacks_train, strata = category, prop = (5000 - 1)/nrow(snacks_train))
+snacks_tr_categorical <- training(snacks_categorical_split)
+snacks_train <- testing(snacks_categorical_split)
+# Text Split
+set.seed(123)
+snacks_txt_split <- initial_split(snacks_train, strata = category, prop = (5000 - 1)/nrow(snacks_train))
+snacks_tr_txt <- training(snacks_txt_split)
+snacks_train <- testing(snacks_txt_split)
+# Tunning Split
+set.seed(123)
+snacks_tunning_split <- initial_split(snacks_train, strata = category, prop = (4000 - 1)/nrow(snacks_train))
+snacks_tr_tunning <- training(snacks_tunning_split)
+# Model Selection Split
+snacks_tr_selection <- testing(snacks_tunning_split)
+
+all_splits <- tibble(name = c("imbalance", "numerical", "categorical", "txt", "tunning", "selection", "test"),
+        df = list( snacks_tr_imbalance, snacks_tr_numeric, snacks_tr_categorical, snacks_tr_txt, snacks_tr_tunning , snacks_tr_selection, snacks_te)) %>% mutate(n_rows = map_dbl(df, nrow))
+
+# saveRDS(all_splits ,"all_splits/all_splits.rds" )
+```
+
+```{r, echo=F}
+kable( t(all_splits %>% select(-df)) , "latex", booktabs = T) %>%
+  kable_styling(latex_options = c("striped"), font_size =10)
+```
+
+In addition, I kept the indexes for the train & test so that I could split the data in the same way in Python, when I run the neural network model with images.
+
+```{r, eval=F, echo=F}
+train_idx_category <- snacks_tr %>% select(idx, category) 
+test_idx_category <- snacks_te %>% select(idx, category)
+write.csv(train_idx_category, "saved_data/train_idx_category.csv", row.names = F)
+write.csv(test_idx_category, "saved_data/test_idx_category.csv", row.names = F)
+```
+
+### Main Functions
+Create functions for running the models: 
+
+```{r}
+fit_model <- function(rec_obj, model) { # get: recipe and model, returns: fit object
+  fit(model, category ~ ., data = juice(rec_obj, all_predictors(), all_outcomes())) }
+# a function that creates data frame with all the possible combinations between model & recipe
+all_comb_mod_rec <- function(name_rec , names_models) {
+  n_mods <- length(names_models)
+  tibble( "name_rec" = rep(name_rec, n_mods), "model_name" = names_models)  }
+# a function that returns the model and recipe predictions for a particular split.
+pred_mod <- function(split_obj, rec_obj, model_obj) {
+  mod_data <- bake(rec_obj,
+                   new_data = assessment(split_obj),
+                   all_predictors(), all_outcomes())
+  out <- mod_data %>% select(category)
+  out$predicted <- predict(model_obj, mod_data)$.pred_class
+  out
+}
+# a function to train the recipe
+train_recipe <- function(rec_name, model_name,splits, lst_recs, lst_mods) {
+  cat("start working:" ,rec_name, model_name, paste(Sys.time()), "\n")
+  splits_prepped <- map(splits, prepper, recipe = lst_recs[[rec_name]])
+  splits_fit <- map(splits_prepped, fit_model , model = lst_mods[[model_name]] )
+  splits_pred <- pmap(
+    lst(split_obj = splits, rec_obj = splits_prepped,  model_obj = splits_fit),
+    pred_mod
+  )
+  res <- map_dfr(splits_pred, accuracy, category, predicted)$.estimate
+  name_res <-  paste0(rec_name,".", model_name)
+  cat("mean cv accuracy", mean(res) , "\n")
+  tibble(res) %>% setNames(name_res)
+}
+# a function to compute acc for each of the models & recipes
+acc_fun <- function( df_mods_recs, lst_recs ,lst_mods ,  cv_df) {
+  cv_df <- cv_df %>%  bind_cols(
+      map2_dfc(df_mods_recs$name_rec, df_mods_recs$model_name, train_recipe,
+              splits = cv_df$splits, lst_recs = lst_recs, lst_mods = lst_mods)) 
+  cv_df <- cv_df %>% pivot_longer(cols = cv_df %>% select(-c(id,splits)) %>% names() ,
+                                 names_to = "recipe", values_to = "Accuracy") %>%
+    select(id, recipe, Accuracy) %>% separate(recipe, c("rec", "model"), sep ="\\.")
+}
+```
+
+```{r, echo=F}
+# defining the models I will use:
+mod_mult_reg_ridge <- multinom_reg(penalty = 0.001 , mixture = 0) %>%
+  set_mode("classification") %>% set_engine("glmnet")
+mod_mult_reg_lasso <- multinom_reg(penalty = 0.001 , mixture = 1) %>%
+   set_engine("glmnet") %>%  set_mode("classification")  
+mod_rf <-  rand_forest(trees = 1000, min_n = 50) %>% 
+  set_engine("ranger") %>%  set_mode("classification") 
+mod_xgboost <- boost_tree(trees = 1000 ,min_n = 50, tree_depth = 5) %>% 
+  set_engine("xgboost") %>%  set_mode("classification")
+mod_svm_rbf <- svm_rbf() %>% 
+  set_engine("kernlab") %>%  set_mode("classification") 
+mod_svm_poly <- svm_poly() %>% 
+  set_engine("kernlab") %>%  set_mode("classification") 
+mod_knn <- nearest_neighbor(neighbors = 10) %>%
+    set_engine("kknn") %>%  set_mode("classification") 
+```
+
+
+
+## Class Imbalance 
+
+```{r, echo=F}
+kable(food_train_initial %>% count(category) , "latex", booktabs = T) %>%
+  kable_styling(latex_options = c("striped"), font_size =8)
+```
+
+As you can see the classes are not balanced (at a light level), and if I want to use accuracy metric for assessing the performance of the models - I should handle this.  
+
+**Strategies:** Upsample, Downsample, Smot 
+
+I will start by creating some features just to run the models at this stage, later I'll examine each of the strategies in depth.
+```{r, warning=F, message=F}
+# For nutrients cols: function to check if we have more then 5% values above 0
+is_remove <- function(col) (sum(col>0) / length(col)) < 0.05
+nutr_to_rm <- map_lgl(snacks_tr_imbalance %>% select(starts_with("nutr_")), is_remove)
+nutr_to_rm <- names(nutr_to_rm[nutr_to_rm==TRUE]) # keep the names of the nutrients to drop
+# let's create brand_size col:
+data_for_brand <- snacks_tr_imbalance %>% group_by(brand) %>% count(sort=T) 
+kable (t( quantile( data_for_brand %>% pull(n) , c(0.1,0.25, 0.5, seq(0.7,1,.025) ) )))
+small_brands <- data_for_brand %>% filter(n ==1) %>% pull(brand)
+medium_brands <- data_for_brand %>% filter(n < 11 && n>=2) %>% pull(brand)
+# I'll choose 10 top ingredients (excluding sugar and salt) and create dummy vars for them
+n_top_ingredient(data = as_tibble(snacks_tr_imbalance), num = 12,  by_category = FALSE) %>%
+  filter(! (ingredient %in% c("sugar","salt"))) %>% pull(ingredient) %>% t() %>% kable()
+```
+
+I added dummies for these top words and also added `brand_size` col according to what I defined above (See code)
+```{r, echo=F}
+str_detect_yesno <- function(s, pattern) {
+    ifelse(is.na(s), 0, ifelse(str_detect(s, pattern), 1, 0))  }
+snacks_tr_imbalance2 <- snacks_tr_imbalance %>%
+  mutate(ing_soy_lecithin = str_detect_yesno(new_ingredient, "soy lecithin"),
+         ing_corn_syrup = str_detect_yesno(new_ingredient, "corn syrup"),
+         ing_citric_acid = str_detect_yesno(new_ingredient, "citric acid"),
+         ing_cocoa_butter = str_detect_yesno(new_ingredient, "cocoa butter"),
+         ing_niacin = str_detect_yesno(new_ingredient, "niacin"),
+         ing_folic_acid = str_detect_yesno(new_ingredient, "folic acid"),
+         ing_water = str_detect_yesno(new_ingredient, "water"),
+         ing_riboflavin = str_detect_yesno(new_ingredient, "riboflavin"),
+         ing_wheat_flour = str_detect_yesno(new_ingredient, "wheat flour"),
+         ing_reduced_iron = str_detect_yesno(new_ingredient, "reduced iron")) %>% 
+  mutate(brand_size = case_when(brand %in%small_brands ~ "small", brand %in% medium_brands ~ "medium",
+                                TRUE ~ "large"))
+```
+
+
+
+Recipes:
+
+```{r}
+rec_imb_upsample <- recipe(category~. , data = snacks_tr_imbalance2) %>%
+  # We'll remove columns we now don't need:
+  step_rm("idx","ingredients","new_ingredient", "description", "serving_size_unit", "household_serving_fulltext") %>%
+  step_rm(nutr_to_rm) %>%
+  step_meanimpute(household_serving_fulltext_num) %>% # Impute average instead of NA's:
+  step_normalize(all_numeric(), -starts_with("ing_")) %>% # normalize
+  step_unknown(all_nominal(), -all_outcomes()) %>% # unknown instead of NA's, other for uncomoon values:
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>% # step novel for possible new categories in val set:
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% # step dummy for categorical features:
+  step_upsample(category, over_ratio = 1, seed= 123) # upsample 
+rec_imb_downsample <- recipe(category~. , data = snacks_tr_imbalance2) %>%
+  step_rm("idx","ingredients","new_ingredient", "description", "serving_size_unit", "household_serving_fulltext") %>%
+  step_rm(nutr_to_rm) %>%
+  step_meanimpute(household_serving_fulltext_num) %>%
+  step_normalize(all_numeric(), -starts_with("ing_")) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_downsample(category, under_ratio = 1, seed= 123)
+rec_imb_smote <- recipe(category~. , data = snacks_tr_imbalance2) %>%
+  step_rm("idx","ingredients","new_ingredient", "description", "serving_size_unit", "household_serving_fulltext") %>%
+  step_rm(nutr_to_rm) %>%
+  step_meanimpute(household_serving_fulltext_num) %>%
+  step_normalize(all_numeric(), -starts_with("ing_")) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>%
+  step_downsample(category, under_ratio = 1.5) %>%
+  step_smote(category, over_ratio = 1, seed = 123)
+lst_rec_imb <- list("upsample" = rec_imb_upsample, "downsample" = rec_imb_downsample,"smot" =rec_imb_smote )
+```
+
+
+```{r}
+# model list for imbalance stage
+mod_lst <- list("mod_mult_reg_ridge" =mod_mult_reg_ridge, "mod_mult_reg_lasso" = mod_mult_reg_lasso,
+                "mod_rf" = mod_rf ,  "mod_xgboost" = mod_xgboost,
+                "mod_svm_rbf" = mod_svm_rbf, "mod_svm_poly" = mod_svm_poly,  "mod_knn" =mod_knn)
+```
+
+
+```{r}
+set.seed(123) # cv splits for imbalance 
+cv_splits_imb <- vfold_cv(snacks_tr_imbalance2,v=10, strata  = category)
+# all combinations to consider
+all_comb_mods_recs <- map_dfr(names(lst_rec_imb), .f =all_comb_mod_rec  , names_models = names(mod_lst)  )
+```
+
+```{r, eval =F}
+acc_all_mod_rec_imb <- acc_fun( df_mods_recs = all_comb_mods_recs, lst_recs = lst_rec_imb  ,
+                                lst_mods = mod_lst , cv_df =cv_splits_imb ) 
+```
+
+```{r, echo=F }
+# write.csv(acc_all_mod_rec_imb, file = "resamples/imbalance_acc.csv", row.names = F)
+acc_all_mod_rec_imb <- read.csv("resamples/imbalance_acc.csv")
+```
+
+
+```{r,  fig.height=2, fig.width=5, fig.align = "center", echo=F}
+acc_all_mod_rec_imb %>% group_by(model, rec) %>% summarise(mean_acc = mean(Accuracy)) %>% arrange(-mean_acc) %>%
+  ggplot(aes(x=rec, y=mean_acc, group = model , color = model)) +
+  geom_point() + geom_line(alpha=.5, size = 1.5) + labs(x="Recipe", y = "Mean Accuracy")
+```
+
+The differences between the upsample and the smot seem pretty negligible. In addition, it seems that downsample is less preferable.
+
+```{r, echo=F, eval=F}
+cv_res_imbalance_meds <- acc_all_mod_rec_imb %>%
+  group_by(rec,model) %>%
+  summarise(Accuracy = median(Accuracy), id = "All")
+
+acc_all_mod_rec_imb %>% group_by(id,model,rec) %>%
+  ggplot(aes(x = rec, y = Accuracy, group = id, color = id)) +
+  geom_point() +  geom_line(data = cv_res_imbalance_meds, color = "black", alpha = 0.2, lwd = 2) +
+  geom_line() +geom_point(data = cv_res_imbalance_meds, color = "black", alpha = 0.2, size = 3, pch = 17) +
+  facet_wrap(.~model) + guides(color = FALSE) 
+```
+
+
+```{r, echo=F}
+res1 <- acc_all_mod_rec_imb %>% group_by(model, rec) %>% summarise(mean_acc = mean(Accuracy)) %>% arrange(-mean_acc) %>% head(5)
+res2 <- acc_all_mod_rec_imb %>% group_by(rec) %>% summarise(mean_acc = mean(Accuracy)) %>% arrange(-mean_acc) 
+```
+
+\captionsetup[table]{labelformat=empty}
+
+```{r sample, results='asis', echo=F}
+t1 <- kable(res1, format = "latex", booktabs = T) %>%
+    kable_styling(latex_options = c("striped"), font_size=9)
+t2 <- kable(res2, format = "latex", booktabs = T) %>%
+    kable_styling(latex_options = c("striped"), font_size=9) 
+```
+
+```{r,echo=F}
+t1 <- gsub("\\begin{table}[H]",
+           "\\begin{minipage}{0.48\\linewidth}\n\\caption{\\label{tab:1}Top 5 Recipes}\n",
+           t1, fixed = TRUE)
+t1 <- gsub("\\end{table}", "\\end{minipage}", t1, fixed = TRUE) 
+
+t2 <- gsub("\\begin{table}[H]",
+           "\\begin{minipage}{0.48\\linewidth}\n\\caption{\\label{tab:2}Mean Acc by Recipe}",
+           t2, fixed = TRUE)
+t2 <- gsub("\\end{table}", "\\end{minipage}", t2, fixed = TRUE) 
+```
+
+```{r, results = "asis", echo=F}
+cat("",
+    "\\begin{table}[!htb]",
+    "\\centering",
+    t1,
+    t2,
+    "\\end{table}",
+    "",
+    sep = "\n") 
+```
+
+
+
+```{r results='asis', echo=FALSE}
+    # # Setting `results = 'asis'` allows for using Latex within the code chunk
+    # cat('\\begin{center}')
+    # # `{c c}` Creates a two column table
+    # # Use `{c | c}` if you'd like a line between the tables
+    # cat('\\begin{tabular}{ c c }')
+    # print(knitr::kable(res1, format = 'latex', booktabs = T))
+    # # Separate the two columns with an `&`
+    # cat('&')
+    # print(knitr::kable(res2, format = 'latex', booktabs = T))
+    # cat('\\end{tabular}')
+    # cat('\\end{center}')
+```
+
+
+Let's compare for each model between upsample to smot: (upsample- smot)
+```{r, echo=F}
+t_test_paired <- function(model1) {
+   t_test <- t.test(acc_all_mod_rec_imb %>% filter(rec == "upsample", model == {{model1}}) %>% pull(Accuracy),
+                    acc_all_mod_rec_imb %>% filter(rec == "smot",model == {{model1}}) %>% pull(Accuracy) , paired = T)
+   tibble("model" = model1 , "pvalue" = round(t_test$p.value,4) ,
+          "conf_int_5%" = paste("[",paste(round(t_test$conf.int[1:2],4), collapse =" , "), "]"))  }
+t_test_res <- map_dfr(names(mod_lst) ,t_test_paired )
+```
+
+```{r, echo=F}
+knitr::kable(t_test_res, "latex", booktabs = T) %>% kable_styling(latex_options = c("striped"), font_size = 8)
+```
+
+
+It can be seen that the differences between "upsample" to "smot" are quite small, and there are only 2 models for which the difference between the two strategies is significant - mod_svm_poly for which smot is better and mod_rf in which upsample is better .  
+**My Decision:**  I'll proceed to the next step only with upsample. Also, I want at this point to get rid of KNN model since I don't think it will get better in the next stages and I want to save computation time. 
+
+
+
+
+## Numerical Features  
+
+**Strategies:**  
+
+**Serving_size & nutrients & Househould serving fulltext num:**
+
+  * Regular (no transformation)
+  * Log trandformation
+  * Trim top and/or bottom percentile (nutrients - only top)
+  
+Nutrients - I'll not trim the bottom edge, because I created these features by setting 0 for each product that did not contain the nutrient. (I want to know which nutrients have amount 0)
+
+**Ingredient Score:** As we saw in Part A, I created a variable that counts for each product - how many ingredients it contained from the list of the top n ingredients for each category.  
+
+  * Include with 8,12,15 top ingredients by category
+  * drop
+  
+**Note:** at the end I will normalize all the numeric cols (except for the binary cols).  
+**NA's:** numerical - mean impute , Categorical - mode ipute (*There are a very small number*)
+
+I added again the variables I added in the previous step (see code) 
+```{r, echo=F}
+# Let's continue use some of the features from last stage (later I will make decision regarding them)
+nutr_to_rm <- map_lgl(snacks_tr_numeric %>% select(starts_with("nutr_")), is_remove)
+nutr_to_rm <- names(nutr_to_rm[nutr_to_rm==TRUE])
+
+# let's create brand_size column:
+data_for_brand2 <- snacks_tr_numeric %>% group_by(brand) %>% count(sort=T) 
+small_brands <- data_for_brand2 %>% filter(n ==1) %>% pull(brand)
+medium_brands <- data_for_brand2 %>% filter(n < 11 && n>=2) %>% pull(brand)
+
+
+# add common ingredients and brand size
+snacks_tr_numeric2 <- snacks_tr_numeric %>%
+  mutate(ing_soy_lecithin = str_detect_yesno(new_ingredient, "soy lecithin"),
+              ing_corn_syrup = str_detect_yesno(new_ingredient, "corn syrup"),
+              ing_citric_acid = str_detect_yesno(new_ingredient, "citric acid"),
+               ing_cocoa_butter = str_detect_yesno(new_ingredient, "cocoa butter"),
+               ing_niacin = str_detect_yesno(new_ingredient, "niacin"),
+               ing_folic_acid = str_detect_yesno(new_ingredient, "folic acid"),
+               ing_water = str_detect_yesno(new_ingredient, "water"),
+               ing_riboflavin = str_detect_yesno(new_ingredient, "riboflavin"),
+          ing_wheat_flour = str_detect_yesno(new_ingredient, "wheat flour"),
+          ing_reduced_iron = str_detect_yesno(new_ingredient, "reduced iron")) %>% 
+  mutate(brand_size = case_when(brand %in%small_brands ~ "small",
+                                     brand %in% medium_brands ~ "medium",
+                                     TRUE ~ "large"))
+```
+
+
+```{r}
+# add ingredient scores using n = 8,12,15  (using functions from part a)
+snacks_tr_numeric2 <- snacks_tr_numeric2 %>% inner_join(create_scores(snacks_tr_numeric2,8) %>% select(-category), by = "idx" ) %>%
+  inner_join(create_scores(snacks_tr_numeric2,12) %>% select(-category), by = "idx" ) %>%
+  inner_join(create_scores(snacks_tr_numeric2,15) %>% select(-category), by = "idx" )
+trim_fun <- function(col, bottom = F) {  # trim function: trim the highest and/or lowest values 
+  q_99 <- quantile(col, probs = .99) ; q_1 <- quantile(col, probs = .01)
+  col <- ifelse(col >  q_99, q_99, col)
+  if(bottom)  col <- ifelse(col<q_1, q_1, col)
+  col  }
+```
+
+All the code for the recipes can be seen in the notebook.
+```{r, eval=F , echo=F}
+# receips 
+rec_reg_ing8 <-  recipe(category~. , data = snacks_tr_numeric2) %>%
+  step_rm("idx","ingredients","new_ingredient", "description", "serving_size_unit", "household_serving_fulltext") %>%
+  step_rm(nutr_to_rm) %>%
+  step_rm(starts_with("score_12")) %>% 
+  step_rm(starts_with("score_15")) %>% 
+  step_meanimpute(household_serving_fulltext_num, starts_with("score_")) %>%
+  step_normalize(all_numeric(), - starts_with("score"), -starts_with("ing_")) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_upsample(category, over_ratio = 1, seed= 123)
+
+rec_reg_ing12 <-  recipe(category~. , data = snacks_tr_numeric2) %>%
+  step_rm("idx","ingredients","new_ingredient", "description", "serving_size_unit", "household_serving_fulltext") %>%
+  step_rm(nutr_to_rm) %>%
+  step_rm(starts_with("score_8")) %>% 
+  step_rm(starts_with("score_15")) %>% 
+  step_meanimpute(household_serving_fulltext_num, starts_with("score_")) %>%
+  step_normalize(all_numeric(), - starts_with("score"), -starts_with("ing_")) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_upsample(category, over_ratio = 1, seed= 123)
+
+rec_reg_ing15 <-  recipe(category~. , data = snacks_tr_numeric2) %>%
+  step_rm("idx","ingredients","new_ingredient", "description", "serving_size_unit", "household_serving_fulltext") %>%
+  step_rm(nutr_to_rm) %>%
+  step_rm(starts_with("score_8")) %>% 
+  step_rm(starts_with("score_12")) %>% 
+  step_meanimpute(household_serving_fulltext_num, starts_with("score_")) %>%
+  step_normalize(all_numeric(), - starts_with("score"), -starts_with("ing_")) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_upsample(category, over_ratio = 1, seed= 123)
+
+rec_reg_drop <-  recipe(category~. , data = snacks_tr_numeric2) %>%
+  step_rm("idx","ingredients","new_ingredient", "description", "serving_size_unit", "household_serving_fulltext") %>%
+  step_rm(nutr_to_rm) %>%
+  step_rm(starts_with("score")) %>% 
+  step_meanimpute(household_serving_fulltext_num) %>%
+  step_normalize(all_numeric(), -starts_with("ing_")) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_upsample(category, over_ratio = 1, seed= 123)
+
+###
+
+rec_log_ing8 <-  recipe(category~. , data = snacks_tr_numeric2) %>%
+  step_rm("idx","ingredients","new_ingredient", "description", "serving_size_unit", "household_serving_fulltext") %>%
+  step_rm(nutr_to_rm) %>%
+  step_rm(starts_with("score_12")) %>% 
+  step_rm(starts_with("score_15")) %>% 
+  step_mutate(trim_serving_size = trim_fun(serving_size, bottom = T)) %>%
+  step_mutate(trim_serving_size = trim_fun(serving_size)) %>%
+  step_rm("serving_size") %>%
+  step_meanimpute(household_serving_fulltext_num, starts_with("score")) %>%
+  step_normalize(all_numeric(), - starts_with("score"), -starts_with("ing_")) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_upsample(category, over_ratio = 1, seed= 123)
+
+rec_log_ing12 <-  recipe(category~. , data = snacks_tr_numeric2) %>%
+  step_rm("idx","ingredients","new_ingredient", "description", "serving_size_unit", "household_serving_fulltext") %>%
+  step_rm(nutr_to_rm) %>%
+  step_rm(starts_with("score_8")) %>% 
+  step_rm(starts_with("score_15")) %>% 
+  step_meanimpute(household_serving_fulltext_num, starts_with("score_")) %>%
+  step_log(serving_size, starts_with("nutr_") , household_serving_fulltext_num, offset = 1) %>% 
+  step_normalize(all_numeric(), - starts_with("score"), -starts_with("ing_")) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_upsample(category, over_ratio = 1, seed= 123)
+
+rec_log_ing15 <-  recipe(category~. , data = snacks_tr_numeric2) %>%
+  step_rm("idx","ingredients","new_ingredient", "description", "serving_size_unit", "household_serving_fulltext") %>%
+  step_rm(nutr_to_rm) %>%
+  step_rm(starts_with("score_12")) %>% 
+  step_rm(starts_with("score_8")) %>% 
+  step_meanimpute(household_serving_fulltext_num, starts_with("score_")) %>%
+  step_log(serving_size, starts_with("nutr_") , household_serving_fulltext_num, offset = 1) %>% 
+  step_normalize(all_numeric(), - starts_with("score"), -starts_with("ing_")) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_upsample(category, over_ratio = 1, seed= 123)
+
+rec_log_drop <-  recipe(category~. , data = snacks_tr_numeric2) %>%
+  step_rm("idx","ingredients","new_ingredient", "description", "serving_size_unit", "household_serving_fulltext") %>%
+  step_rm(nutr_to_rm) %>%
+  step_rm(starts_with("score")) %>% 
+  step_meanimpute(household_serving_fulltext_num) %>%
+  step_log(serving_size, starts_with("nutr_") , household_serving_fulltext_num, offset = 1) %>% 
+  step_normalize(all_numeric(), -starts_with("ing_")) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_upsample(category, over_ratio = 1, seed= 123)
+
+
+###
+
+rec_trim_ing8 <-  recipe(category~. , data = snacks_tr_numeric2) %>%
+  step_rm("idx","ingredients","new_ingredient", "description", "serving_size_unit", "household_serving_fulltext") %>%
+  step_rm(nutr_to_rm) %>%
+  step_rm(starts_with("score_12")) %>% 
+  step_rm(starts_with("score_15")) %>% 
+  step_meanimpute(household_serving_fulltext_num, starts_with("score_")) %>%
+  step_mutate(serving_size =trim_fun(serving_size,bottom = T)) %>%
+  step_mutate(household_serving_fulltext_num =trim_fun(household_serving_fulltext_num,bottom = T)) %>%
+  step_mutate_at(starts_with("nutr_"),fn =  trim_fun) %>%
+  step_normalize(all_numeric(), - starts_with("score"), -starts_with("ing_")) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_upsample(category, over_ratio = 1, seed= 123)
+
+rec_trim_ing12 <-  recipe(category~. , data = snacks_tr_numeric2) %>%
+  step_rm("idx","ingredients","new_ingredient", "description", "serving_size_unit", "household_serving_fulltext") %>%
+  step_rm(nutr_to_rm) %>%
+  step_rm(starts_with("score_8")) %>% 
+  step_rm(starts_with("score_15")) %>%
+  step_meanimpute(household_serving_fulltext_num, starts_with("score_")) %>%
+  step_mutate(serving_size =trim_fun(serving_size,bottom = T)) %>%
+  step_mutate(household_serving_fulltext_num =trim_fun(household_serving_fulltext_num,bottom = T)) %>%
+  step_mutate_at(starts_with("nutr_"),fn =  trim_fun) %>%
+  step_normalize(all_numeric(), - starts_with("score"), -starts_with("ing_")) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_upsample(category, over_ratio = 1, seed= 123)
+
+rec_trim_ing15 <-  recipe(category~. , data = snacks_tr_numeric2) %>%
+  step_rm("idx","ingredients","new_ingredient", "description", "serving_size_unit", "household_serving_fulltext") %>%
+  step_rm(nutr_to_rm) %>%
+  step_rm(starts_with("score_12")) %>% 
+  step_rm(starts_with("score_8")) %>% 
+  step_meanimpute(household_serving_fulltext_num, starts_with("score_")) %>%
+  step_mutate(serving_size =trim_fun(serving_size,bottom = T)) %>%
+  step_mutate(household_serving_fulltext_num =trim_fun(household_serving_fulltext_num,bottom = T)) %>%
+  step_mutate_at(starts_with("nutr_"),fn =  trim_fun) %>%
+  step_normalize(all_numeric(), - starts_with("score"), -starts_with("ing_")) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_upsample(category, over_ratio = 1, seed= 123)
+
+rec_trim_drop <-  recipe(category~. , data = snacks_tr_numeric2) %>%
+  step_rm("idx","ingredients","new_ingredient", "description", "serving_size_unit", "household_serving_fulltext") %>%
+  step_rm(nutr_to_rm) %>%
+  step_rm(starts_with("score")) %>%
+  step_meanimpute(household_serving_fulltext_num) %>%
+  step_mutate(serving_size =trim_fun(serving_size,bottom = T)) %>%
+  step_mutate(household_serving_fulltext_num =trim_fun(household_serving_fulltext_num,bottom = T)) %>%
+  step_mutate_at(starts_with("nutr_"),fn =  trim_fun) %>%
+  step_normalize(all_numeric(),  -starts_with("ing_")) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_upsample(category, over_ratio = 1, seed= 123)
+
+```
+
+
+```{r, eval=F, echo=F}
+lst_rec_numeric <- list(
+  "rec_reg_ing8" = rec_reg_ing8, "rec_reg_ing12" = rec_reg_ing12,
+  "rec_reg_ing15" = rec_reg_ing15, "rec_reg_drop" = rec_reg_drop,
+  "rec_log_ing8" = rec_log_ing8, "rec_log_ing12" = rec_log_ing12,
+  "rec_log_ing15" = rec_log_ing15, "rec_log_drop" = rec_log_drop,
+  "rec_trim_ing8" = rec_trim_ing8, "rec_trim_ing12" = rec_trim_ing12,
+  "rec_trim_ing15" = rec_trim_ing15, "rec_trim_drop" = rec_trim_drop
+)
+mod_lst_numeric <- list("mod_mult_reg_ridge" =mod_mult_reg_ridge,
+                "mod_mult_reg_lasso" = mod_mult_reg_lasso,
+                "mod_rf" = mod_rf ,"mod_xgboost" = mod_xgboost,
+                "mod_svm_rbf" = mod_svm_rbf, "mod_svm_poly" = mod_svm_poly)
+all_comb_mods_recs_numeric <- map_dfr(names(lst_rec_numeric), .f =all_comb_mod_rec  , 
+                                      names_models = names(mod_lst_numeric)  )
+```
+
+
+```{r, eval=F, echo=F}
+set.seed(123)
+cv_splits_numeric <- vfold_cv(snacks_tr_numeric2,v=10, strata  = category)
+```
+
+
+```{r, eval=F, echo=F}
+acc_all_mod_rec_numeric <- acc_fun( df_mods_recs = all_comb_mods_recs_numeric, 
+                                    lst_recs = lst_rec_numeric  ,
+                                    lst_mods = mod_lst_numeric ,cv_df =cv_splits_numeric ) 
+```
+
+```{r, echo=F}
+# write.csv(acc_all_mod_rec_numeric, file = "resamples/numerical_acc.csv", row.names = F)
+acc_all_mod_rec_numeric = read.csv("resamples/numerical_acc.csv")
+```
+
+
+
+```{r, echo=F, fig.height=4, fig.width=7,  fig.align = "center"}
+numeric_p1 <- acc_all_mod_rec_numeric %>% group_by(model, rec) %>% summarise(mean_acc = mean(Accuracy)) %>% arrange(-mean_acc) %>% ggplot(aes(x=rec, y=mean_acc, group = model , color = model)) +
+  geom_point() +  geom_line(alpha=.5, size = 1.5) +
+  theme(axis.text.x = element_text(angle = 20, hjust = 1)) + 
+  labs(x="", y = "Mean Accuracy", title = "Model's Accuracy for Numerical Strategies")
+numeric_p2 <- acc_all_mod_rec_numeric %>%  separate(rec, c("rec", "strat1", "strat2"), sep ="_") %>%
+  group_by(model, strat1, strat2) %>% summarise(mean_acc = mean(Accuracy)) %>% 
+  ggplot(aes(x=strat1, y=mean_acc, group = model , color = model)) + facet_wrap(.~strat2, nrow=1) +
+  geom_point() + geom_line(alpha=.5, size = 1.5) +
+  theme(legend.position = "") +
+  labs(x="", y="Mean Accuracy")
+grid.arrange(numeric_p1, numeric_p2, nrow =2, heights = c(1.5,1))
+```
+
+```{r, echo=F}
+# top 5 recipes
+numeric_top_5_rec <- acc_all_mod_rec_numeric %>% group_by(rec)  %>%
+  summarise(mean_acc = mean(Accuracy)) %>% arrange(-mean_acc) %>% head(5)
+```
+
+\captionsetup[table]{labelformat=empty}
+
+```{r, echo=F, eval=F}
+knitr::kable(numeric_top_5_rec, "latex", booktabs = T, caption = "Top 5 Recipes") %>% 
+  kable_styling(latex_options = c("striped", "hold_position"), font_size = 8 )
+```
+
+**Left:** Top 5 Recipes, **Right:** for the leading models- Xgb, RF, SVM: (see code - these two tables are relevant only for these 3 models)
+
+```{r, echo=F}
+num_lead_1 <- acc_all_mod_rec_numeric %>%  filter(model %in% c("mod_xgboost", "mod_rf", "mod_svm_rbf"))  %>%
+  separate(rec, c("rec", "numeric", "ing_score"), sep ="_") %>% select(-rec) %>% 
+  group_by(ing_score) %>% summarise(mean_acc=mean(Accuracy)) %>%
+  arrange(-mean_acc)
+
+num_lead_2 <- acc_all_mod_rec_numeric %>% 
+  filter(model %in% c("mod_xgboost", "mod_rf", "mod_svm_rbf"))  %>%
+  separate(rec, c("rec", "numeric", "ing_score"), sep ="_") %>%  select(-rec) %>% 
+  group_by(numeric) %>% summarise(mean_acc=mean(Accuracy)) %>%
+  arrange(-mean_acc)
+```
+
+\captionsetup[table]{labelformat=empty}
+
+```{r sample2, results='asis', echo=F, eval=F}
+t1 <- kable(num_lead_1, format = "latex", booktabs = T) %>%
+    kable_styling(latex_options = c("striped"), font_size=10)
+t2 <- kable(num_lead_2, format = "latex", booktabs = T) %>%
+    kable_styling(latex_options = c("striped"), font_size=10) 
+```
+
+```{r,echo=F, eval=F}
+t1 <- gsub("\\begin{table}[H]",
+           "\\begin{minipage}{0.48\\linewidth}\n\\caption{\\label{tab:1}Mean Acc Ing Score}\n",
+           t1, fixed = TRUE)
+t1 <- gsub("\\end{table}", "\\end{minipage}", t1, fixed = TRUE) 
+
+t2 <- gsub("\\begin{table}[H]",
+           "\\begin{minipage}{0.48\\linewidth}\n\\caption{\\label{tab:2}Mean Acc Numeric Strategy}",
+           t2, fixed = TRUE)
+t2 <- gsub("\\end{table}", "\\end{minipage}", t2, fixed = TRUE) 
+```
+
+```{r, results = "asis", echo=F, eval=F}
+cat("",
+    "\\begin{table}[!htb]",
+    "\\centering",
+    t1,
+    t2,
+    "\\end{table}",
+    "",
+    sep = "\n") 
+```
+
+```{r,out.width="85%", fig.show='hold',fig.align='center' , echo = F}
+# Just to save space - I combined the three tables into one image.
+knitr::include_graphics("plots/numeric_3_tables_side_by_side.JPG")
+``` 
+
+
+
+
+
+**Conclusions:**
+It can be seen that there is no such significant difference between the strategies.
+It always seems better to include the score feature, but it is not entirely clear whether 8,12 or 15 is better.
+For leading models (rf, xgboost, svm_rbf) it seems better to take a score of 15.
+Also, it seems that there is not much difference between the log, trim, regular strategy. trim is slightly higer then the others,  so I decided to go with trim. I will also say goodbye to ridge and lasso models - since in the previous two stages they were not good and and I don't believe they will rise above xgboost or random forest. 
+
+
+
+## Categorical Features
+
+I'll create new features:  
+
+* `brand_size`  - classiy to "small", "medium" , "large", "huge" brand by the number of products.
+* `n_distinct_cat` -  classify brand by the number of (disticnt) categories it sells:
+* Brand keywrods -  classify by keywords of brand name (droping words appears less then 50 times)
+* Serving fulltext keywords -  classify using keywords I created at part A + step_other .01
+* Serving fulltext Feature Hashing (num trems - 10)
+
+**Strategies:**:  
+
+Brand 1 - `brand_size` | Brand 2 - `n_distinct_cat` | Brand 3 - keywords | Serving Fulltext
+-------------          | -------------              | -------------      | -------------  
+brand size             | numerical                  |  keywords          |  keywords 
+drop                   | categorical                |  drop              | hashing
+       -               |       drop                 |       -            |   -
+       
+
+Total of 24 strategies but due to considerations of time , I will run all the recipes with brand size and then I'll choose  top recipes and I'll run them without brand_size and check whther there is any difference.  
+
+**My strategy for choosing the best words to include in the model:**  
+Since we have more then 2 categories - I decided to use *entropy* metric as a impurity measurment.
+For each of the words:  
+- I'll calculate the number of appearance in each of the categories  
+- Then I'll compute the entropy: $\sum_{i=1}^{6} -log(\hat{p_{i}})\cdot \hat{p_i}$ where $\Sigma$ denotes the sum over the categories, $\hat{p}$ denotes the estimated frequency of the word in category i.  This metric expresses the impurity (of the categories) for each word. 
+- I'll get "purity score" for each of the words. 
+The smaller it is - that means there is more impurity - meaning fewer categories or one very large category.
+Therefore, I would like to take all the words for which cross enrtopy is the smallest (~ <1.5).  
+In addition, I will look at words that appear at least 50-100 times in the data. 
+*(I used that $0\cdot \log(0)=0$)* 
+
+
+```{r}
+# add the score for ingredient 
+snacks_tr_categorical2 <- snacks_tr_categorical %>% inner_join(create_scores(snacks_tr_categorical,15) %>% select(-category), by = "idx" ) 
+# find the nutrients to remove: all the nutrients in which less then 5% are greater then 0
+nutr_to_rm <- map_lgl(snacks_tr_categorical2 %>% select(starts_with("nutr_")), is_remove)
+nutr_to_rm <- names(nutr_to_rm[nutr_to_rm==TRUE])
+```
+
+```{r, warning=F, message=F}
+# a function that classify brand size according to the no. of products it sells
+classify_brand_size <- function(data) {
+  data_brand <- data %>% group_by(brand) %>% count(sort=T) 
+  quantiles <- quantile( data_brand %>% pull(n) , c(.5, .85,.99 ) )
+  small_brands <- data_brand %>% filter(n <= quantiles[1]) %>% pull(brand)
+  medium_brands <- data_brand %>% filter(n > quantiles[1] && n <=quantiles[2] ) %>% pull(brand)
+  large_brands <- data_brand %>% filter(n > quantiles[2] && n <= quantiles[3]) %>% pull(brand)
+  data %>% mutate(brand_size = case_when(
+    brand %in% small_brands ~ "small", brand %in% medium_brands ~ "medium",
+    brand %in% large_brands ~ "large", TRUE ~ "huge") )
+}
+snacks_tr_categorical2 <- classify_brand_size(snacks_tr_categorical2) 
+# create 'n_distinct_cat' - for each brand: compute the number of 
+# distinct categories and merge it to the data
+snacks_tr_categorical2 <-  snacks_tr_categorical2 %>%  group_by(brand) %>%
+  summarise(n_distinct_cat = n_distinct(category)) %>% inner_join(snacks_tr_categorical2)
+```
+
+Let's create some help functions for handling text features: 
+
+```{r}
+# a function to count words by each category and compute entropy
+top_words_by_category_entropy <- function(data, col) { # a function to 
+  data %>% mutate_at({{col}}, as.character) %>% group_by(category) %>%
+  unnest_tokens(word, {{col}}) %>%
+  anti_join(stop_words) %>%
+  filter(!str_detect(word, pattern = "[[:digit:]]"), # removes any words with numeric digits
+    !str_detect(word, pattern = "[[:punct:]]"),      # removes any remaining punctuations
+    !str_detect(word, pattern = "(.)\\1{2,}"),       # removes any words with 3 or more repeated letters
+    !str_detect(word, pattern = "\\b(.)\\b")        # removes any remaining single letter words
+  ) %>%  count(word, sort = T) %>% group_by(word) %>% mutate(pct = n/sum(n), entropy = entropy_fun(pct) , sum_n = sum(n))
+}
+# a function that returns the best words  that appears at least n times and with entropy < entropy_max
+order_words_by_entropy <- function(data, col,  n_words, entrop_max) {
+  data %>% filter(sum_n>n_words,entropy<entrop_max) %>% arrange(entropy) %>% 
+    distinct({{col}}) %>% pull({{col}})  }
+# plot the chosen words 
+plot_chosen_words <-  function(data, col, order_words) {
+  data  %>% filter({{col}} %in% order_words ) %>%
+    ggplot(aes(x = reorder({{col}}, -entropy),  y = n , fill = category)) +
+    geom_bar(stat = "identity",position = "fill", color = "white", size = .3) + coord_flip() + theme_light() + 
+    labs(x="", y="")
+}
+# a function to create columns for the chosen words and merge it to the data
+merge_chosen_words <- function(data, col, order_words, starter) {
+  df_to_mrege <- data %>% mutate_at({{col}}, as.character) %>%
+  unnest_tokens(word, {{col}}) %>%
+  anti_join(stop_words) %>%
+  filter(word %in% order_words) %>%     # filter for only words in the wordlist
+  count(idx, word) %>%                 # count word useage by  ID
+  spread(word, n) %>%                 # convert to wide format
+  map_df(replace_na, 0)   %>%  rename_at(vars(-idx), ~(paste0(starter, .))  )
+  data %>% left_join(df_to_mrege) %>% 
+  mutate_at(vars(starts_with(starter)), ~(ifelse(is.na(.),0,.)))
+}
+```
+
+
+```{r,  fig.height=2.5, fig.width=7,, fig.align = "center", message=F , warning=F}
+# create data with words & counts of brand + entropy
+brnd_words_dat <- top_words_by_category_entropy(snacks_tr_categorical2, "brand")
+chosen_words <- order_words_by_entropy(brnd_words_dat,word, 50,entrop_max =  1.4)
+# let's take a look at the chosen words of brand:
+plot_chosen_words(brnd_words_dat, word, chosen_words) + ggtitle("Brand's Best Words by Category")
+# add the best words to the data
+snacks_tr_categorical3 <- merge_chosen_words(data =snacks_tr_categorical2, col = "brand", 
+                                             order_words =chosen_words, starter = "brnd_"  )
+```
+
+```{r}
+# fulltext - create "household serving update" using the keyword from part A
+snacks_tr_categorical4 <- household_serving_update_fun(snacks_tr_categorical3,
+                                                       household_serving_fulltext, key_words_list )
+# prepare the data in order to find out the best words
+fulltext_keys_data <- snacks_tr_categorical4 %>% group_by(category, household_serving_update) %>%
+  count(sort = T) %>% group_by(household_serving_update) %>%
+  mutate(pct = n/sum(n), entropy = entropy_fun(pct) , sum_n = sum(n)) 
+# best words: entropy < 1.6 , appears more then 50 times.
+order_fulltext_keys_by_entropy <- order_words_by_entropy(fulltext_keys_data,"household_serving_update", 50,entrop_max =  1.6)
+# make everything that desn't belong to the selected word list "other"
+snacks_tr_categorical5 <- snacks_tr_categorical4 %>% 
+  mutate_at("household_serving_update" ,~(ifelse(.%in%order_fulltext_keys_by_entropy, . , "other")))
+```
+
+```{r, echo=F}
+# let's take a look at the chosen words:
+# plot_chosen_words(data =fulltext_keys_data, household_serving_update, order_words = order_fulltext_keys_by_entropy )
+```
+
+
+The code for the recipes is available in the nootbook.
+
+```{r, echo=F, eval=F}
+# brand size -categorical - keyword - keyword
+rec_brndsize_ncat_keyword_keyword <-  recipe(category~. , data = snacks_tr_categorical5) %>%
+  step_rm("idx","ingredients","new_ingredient","description","serving_size_unit", "household_serving_fulltext", "brand") %>%
+  step_rm(nutr_to_rm) %>%
+  step_meanimpute(household_serving_fulltext_num, starts_with("score_")) %>%
+  step_mutate_at("n_distinct_cat","household_serving_update", fn =  as.factor) %>%
+  step_mutate(serving_size =trim_fun(serving_size,bottom = T)) %>%
+  step_mutate(household_serving_fulltext_num =trim_fun(household_serving_fulltext_num,bottom = T)) %>%
+  step_mutate_at(starts_with("nutr_"),fn =  trim_fun) %>%
+  step_normalize(all_numeric(), - starts_with("score"), - starts_with("brnd_")) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_upsample(category, over_ratio = 1, seed= 123) 
+
+# brand size -categorical - keyword - hashing
+rec_brndsize_ncat_keyword_hashing <-  recipe(category~. , data = snacks_tr_categorical5) %>%
+  step_rm("idx","ingredients","new_ingredient", "description", "serving_size_unit", "brand") %>%
+  step_rm(nutr_to_rm,  "household_serving_update") %>%
+  step_meanimpute(household_serving_fulltext_num, starts_with("score_")) %>%
+  step_mutate_at("n_distinct_cat", fn =  as.factor) %>%
+  step_mutate(serving_size =trim_fun(serving_size,bottom = T)) %>%
+  step_mutate(household_serving_fulltext_num =trim_fun(household_serving_fulltext_num,bottom = T)) %>%
+  step_mutate_at(starts_with("nutr_"),fn =  trim_fun) %>%
+  step_modeimpute(household_serving_fulltext) %>%
+  step_tokenize(household_serving_fulltext) %>%
+  step_texthash(household_serving_fulltext, signed = FALSE, num_terms =10) %>%
+  step_zv(all_numeric()) %>%
+  step_normalize(all_numeric(), - starts_with("score"), - starts_with("brnd_"), -starts_with("household_serving_fulltext_hash")) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_upsample(category, over_ratio = 1, seed= 123) 
+
+##
+
+# brand size -categorical - drop - keyword
+rec_brndsize_ncat_drop_keyword <-  recipe(category~. , data = snacks_tr_categorical5) %>%
+  step_rm("idx","ingredients","new_ingredient", "description", "serving_size_unit", "household_serving_fulltext", "brand") %>%
+  step_rm(nutr_to_rm, starts_with("brnd_")) %>%
+  step_meanimpute(household_serving_fulltext_num, starts_with("score_")) %>%
+  step_mutate(serving_size =trim_fun(serving_size,bottom = T)) %>%
+  step_mutate(household_serving_fulltext_num =trim_fun(household_serving_fulltext_num,bottom = T)) %>%
+  step_mutate_at(starts_with("nutr_"),fn =  trim_fun) %>%
+  step_mutate_at("n_distinct_cat","household_serving_update", fn =  as.factor) %>%
+  step_normalize(all_numeric(), - starts_with("score")) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_upsample(category, over_ratio = 1, seed= 123) 
+
+# brand size -categorical - drop - hashing
+rec_brndsize_ncat_drop_hashing <-  recipe(category~. , data = snacks_tr_categorical5) %>%
+  step_rm("idx","ingredients","new_ingredient", "description", "serving_size_unit", "brand") %>%
+  step_rm(nutr_to_rm, "household_serving_update", starts_with("brnd_")) %>%
+  step_meanimpute(household_serving_fulltext_num, starts_with("score_")) %>%
+  step_mutate_at("n_distinct_cat", fn =  as.factor) %>%
+  step_mutate(serving_size =trim_fun(serving_size,bottom = T)) %>%
+  step_mutate(household_serving_fulltext_num =trim_fun(household_serving_fulltext_num,bottom = T)) %>%
+  step_mutate_at(starts_with("nutr_"),fn =  trim_fun) %>%
+  step_modeimpute(household_serving_fulltext) %>%
+  step_tokenize(household_serving_fulltext) %>%
+  step_texthash(household_serving_fulltext, signed = FALSE, num_terms =10) %>%
+  step_zv(all_numeric()) %>%
+  step_normalize(all_numeric(), - starts_with("score"), -starts_with("household_serving_fulltext_hash")) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_upsample(category, over_ratio = 1, seed= 123)
+
+###
+
+
+# brand size - numeric - drop - keyword
+rec_brndsize_numeric_drop_keyword <-  recipe(category~. , data = snacks_tr_categorical5) %>%
+  step_rm("idx","ingredients","new_ingredient", "description", "serving_size_unit", "household_serving_fulltext", "brand") %>%
+  step_rm(nutr_to_rm, starts_with("brnd_")) %>%
+  step_meanimpute(household_serving_fulltext_num, starts_with("score_")) %>%
+  step_mutate_at("household_serving_update", fn =  as.factor) %>%
+  step_mutate(serving_size =trim_fun(serving_size,bottom = T)) %>%
+  step_mutate(household_serving_fulltext_num =trim_fun(household_serving_fulltext_num,bottom = T)) %>%
+  step_mutate_at(starts_with("nutr_"),fn =  trim_fun) %>%
+  step_normalize(all_numeric(), - starts_with("score")) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_upsample(category, over_ratio = 1, seed= 123)
+
+
+# brand size - numeric - drop - hashing
+rec_brndsize_numeric_drop_hashing <-  recipe(category~. , data = snacks_tr_categorical5) %>%
+  step_rm("idx","ingredients","new_ingredient", "description", "serving_size_unit", "household_serving_update", "brand") %>%
+  step_rm(nutr_to_rm, starts_with("brnd_")) %>%
+  step_meanimpute(household_serving_fulltext_num, starts_with("score_")) %>%
+  step_mutate(serving_size =trim_fun(serving_size,bottom = T)) %>%
+  step_mutate(household_serving_fulltext_num =trim_fun(household_serving_fulltext_num,bottom = T)) %>%
+  step_mutate_at(starts_with("nutr_"),fn =  trim_fun) %>%
+  step_modeimpute(household_serving_fulltext) %>%
+  step_tokenize(household_serving_fulltext) %>%
+  step_texthash(household_serving_fulltext, signed = FALSE, num_terms =10) %>%
+  step_zv(all_numeric()) %>%
+  step_normalize(all_numeric(), - starts_with("score"), -starts_with("household_serving_fulltext_hash")) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_upsample(category, over_ratio = 1, seed= 123)
+
+
+
+# brand size - numeric - keyword - keyword
+rec_brndsize_numeric_keyword_keyword <-  recipe(category~. , data = snacks_tr_categorical5) %>%
+  step_rm("idx","ingredients","new_ingredient", "description", "serving_size_unit", "household_serving_fulltext", "brand") %>%
+  step_rm(nutr_to_rm) %>%
+  step_meanimpute(household_serving_fulltext_num, starts_with("score_")) %>%
+  step_mutate(serving_size =trim_fun(serving_size,bottom = T)) %>%
+  step_mutate(household_serving_fulltext_num =trim_fun(household_serving_fulltext_num,bottom = T)) %>%
+  step_mutate_at(starts_with("nutr_"),fn =  trim_fun) %>%
+  step_mutate_at("household_serving_update", fn =  as.factor) %>%
+  step_normalize(all_numeric(), - starts_with("score"), -starts_with("brnd_")) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_upsample(category, over_ratio = 1, seed= 123) 
+
+
+
+
+# brand size - numeric - keyword - hashing
+rec_brndsize_numeric_keyword_hashing <-  recipe(category~. , data = snacks_tr_categorical5) %>%
+  step_rm("idx","ingredients","new_ingredient", "description", "serving_size_unit", "household_serving_update", "brand") %>%
+  step_rm(nutr_to_rm) %>%
+  step_meanimpute(household_serving_fulltext_num, starts_with("score_")) %>%
+  step_mutate(serving_size =trim_fun(serving_size,bottom = T)) %>%
+  step_mutate(household_serving_fulltext_num =trim_fun(household_serving_fulltext_num,bottom = T)) %>%
+  step_mutate_at(starts_with("nutr_"),fn =  trim_fun) %>%
+  step_modeimpute(household_serving_fulltext) %>%
+  step_tokenize(household_serving_fulltext) %>%
+  step_texthash(household_serving_fulltext, signed = FALSE, num_terms =10) %>%
+  step_zv(all_numeric()) %>%
+  step_normalize(all_numeric(), - starts_with("score"), -starts_with("brnd_"), -starts_with("household_serving_fulltext_hash")) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_upsample(category, over_ratio = 1, seed= 123)
+
+
+
+
+# brand size - drop - keyword - keyword
+rec_brndsize_drop_keyword_keyword <-  recipe(category~. , data = snacks_tr_categorical5) %>%
+  step_rm("idx","ingredients","new_ingredient", "description", "serving_size_unit", "household_serving_fulltext", "brand") %>%
+  step_rm(nutr_to_rm, "n_distinct_cat") %>%
+  step_meanimpute(household_serving_fulltext_num, starts_with("score_")) %>%
+  step_mutate(serving_size =trim_fun(serving_size,bottom = T)) %>%
+  step_mutate(household_serving_fulltext_num =trim_fun(household_serving_fulltext_num,bottom = T)) %>%
+  step_mutate_at(starts_with("nutr_"),fn =  trim_fun) %>%
+  step_mutate_at("household_serving_update", fn =  as.factor) %>%
+  step_normalize(all_numeric(), - starts_with("score"), -starts_with("brnd_")) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_upsample(category, over_ratio = 1, seed= 123) 
+
+
+# brand size - drop - keyword - hashing
+rec_brndsize_drop_keyword_hashing <-  recipe(category~. , data = snacks_tr_categorical5) %>%
+  step_rm("idx","ingredients","new_ingredient", "description", "serving_size_unit", "household_serving_update", "brand") %>%
+  step_rm(nutr_to_rm, "n_distinct_cat") %>%
+  step_meanimpute(household_serving_fulltext_num, starts_with("score_")) %>%
+  step_mutate(serving_size =trim_fun(serving_size,bottom = T)) %>%
+  step_mutate(household_serving_fulltext_num =trim_fun(household_serving_fulltext_num,bottom = T)) %>%
+  step_mutate_at(starts_with("nutr_"),fn =  trim_fun) %>%
+  step_modeimpute(household_serving_fulltext) %>%
+  step_tokenize(household_serving_fulltext) %>%
+  step_texthash(household_serving_fulltext, signed = FALSE, num_terms =10) %>%
+  step_zv(all_numeric()) %>%
+  step_normalize(all_numeric(), - starts_with("score"), -starts_with("brnd_"), -starts_with("household_serving_fulltext_hash")) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_upsample(category, over_ratio = 1, seed= 123)
+
+
+
+# brand size - drop - drop - keyword
+rec_brndsize_drop_drop_keyword <-  recipe(category~. , data = snacks_tr_categorical5) %>%
+  step_rm("idx","ingredients","new_ingredient", "description", "serving_size_unit", "household_serving_fulltext", "brand") %>%
+  step_rm(nutr_to_rm, "n_distinct_cat", starts_with("brnd_")) %>%
+  step_meanimpute(household_serving_fulltext_num, starts_with("score_")) %>%
+  step_mutate(serving_size =trim_fun(serving_size,bottom = T)) %>%
+  step_mutate(household_serving_fulltext_num =trim_fun(household_serving_fulltext_num,bottom = T)) %>%
+  step_mutate_at(starts_with("nutr_"),fn =  trim_fun) %>%
+  step_mutate_at("household_serving_update", fn =  as.factor) %>%
+  step_normalize(all_numeric(), - starts_with("score")) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_upsample(category, over_ratio = 1, seed= 123) 
+
+# brand size - drop - drop - hashing
+rec_brndsize_drop_drop_hashing <-  recipe(category~. , data = snacks_tr_categorical5) %>%
+  step_rm("idx","ingredients","new_ingredient", "description", "serving_size_unit", "household_serving_update", "brand") %>%
+  step_rm(nutr_to_rm, "n_distinct_cat", starts_with("brnd_")) %>%
+  step_meanimpute(household_serving_fulltext_num, starts_with("score_")) %>%
+  step_mutate(serving_size =trim_fun(serving_size,bottom = T)) %>%
+  step_mutate(household_serving_fulltext_num =trim_fun(household_serving_fulltext_num,bottom = T)) %>%
+  step_mutate_at(starts_with("nutr_"),fn =  trim_fun) %>%
+  step_modeimpute(household_serving_fulltext) %>%
+  step_tokenize(household_serving_fulltext) %>%
+  step_texthash(household_serving_fulltext, signed = FALSE, num_terms =10) %>%
+  step_zv(all_numeric()) %>%
+  step_normalize(all_numeric(), - starts_with("score"), -starts_with("household_serving_fulltext_hash")) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_upsample(category, over_ratio = 1, seed= 123)
+
+```
+
+```{r, eval=F ,echo=F}
+lst_rec_categorical <- list(
+  "rec_brndsize_ncat_keyword_keyword" = rec_brndsize_ncat_keyword_keyword,
+  "rec_brndsize_ncat_keyword_hashing" = rec_brndsize_ncat_keyword_hashing,
+  "rec_brndsize_ncat_drop_keyword" = rec_brndsize_ncat_drop_keyword,
+  "rec_brndsize_ncat_drop_hashing" = rec_brndsize_ncat_drop_hashing,
+  "rec_brndsize_numeric_drop_keyword" = rec_brndsize_numeric_drop_keyword,
+  "rec_brndsize_numeric_drop_hashing"= rec_brndsize_numeric_drop_hashing,
+  "rec_brndsize_numeric_keyword_keyword"= rec_brndsize_numeric_keyword_keyword,
+  "rec_brndsize_numeric_keyword_hashing" = rec_brndsize_numeric_keyword_hashing,
+  "rec_brndsize_drop_keyword_keyword" = rec_brndsize_drop_keyword_keyword,
+  "rec_brndsize_drop_keyword_hashing"  = rec_brndsize_drop_keyword_hashing,
+  "rec_brndsize_drop_drop_keyword" = rec_brndsize_drop_drop_keyword,
+  "rec_brndsize_drop_drop_hashing" = rec_brndsize_drop_drop_hashing
+)
+```
+
+
+
+```{r, eval=F, echo=F}
+mod_lst_categorical <- list(
+                "mod_rf" = mod_rf ,
+                "mod_xgboost" = mod_xgboost,
+                "mod_svm_rbf" = mod_svm_rbf,
+                "mod_svm_poly" = mod_svm_poly )
+
+all_comb_mods_recs_categorical <- map_dfr(names(lst_rec_categorical),
+                                          .f =all_comb_mod_rec  , names_models = names(mod_lst_categorical)  )
+```
+
+```{r}
+set.seed(123)
+cv_splits_categorical <- vfold_cv(snacks_tr_categorical5,v=10, strata  = category)
+```
+
+
+```{r, eval=F, echo=F}
+acc_all_mod_rec_categorical_6_last <- acc_fun( df_mods_recs = all_comb_mods_recs_categorical,lst_recs = lst_rec_categorical,
+                                        lst_mods = mod_lst_categorical , cv_df =cv_splits_categorical ) 
+```
+
+```{r, echo=F}
+# write.csv(acc_all_mod_rec_categorical, file = "resamples/categorical_acc.csv", row.names = F)
+acc_all_mod_rec_categorical = read.csv("resamples/categorical_acc.csv")
+```
+
+
+```{r, echo=F}
+top_5_category <- acc_all_mod_rec_categorical %>% group_by(rec)  %>%
+  summarise(mean_acc = mean(Accuracy)) %>% arrange(-mean_acc) %>% head(5)
+```
+
+
+```{r,fig.height=3.2, fig.width=7, fig.align = "center", echo=F}
+acc_all_mod_rec_categorical %>% group_by(model, rec) %>% summarise(mean_acc = mean(Accuracy)) %>% 
+  mutate(rec= str_replace(rec, "rec_brndsize_", "")) %>%
+  ggplot(aes(x=rec, y=mean_acc, group = model , color = model)) + 
+  labs(x="", y="Mean Accuracy", title = "Model's Accuracy for Categorical Strategies") +
+  geom_point() + geom_line(alpha=.5, size=1.5) +
+  theme(axis.text.x = element_text(angle = 25, hjust=1, size = 7))
+```
+
+```{r, echo=F}
+acc_all_mod_rec_categorical_sep <- acc_all_mod_rec_categorical %>% 
+  separate(rec, c("rec", "brand1", "brand2", "brand3", "fulltext"), sep ="_") %>%  select(-rec) 
+p_categorical_1 <- acc_all_mod_rec_categorical_sep %>%  group_by(fulltext) %>% summarise(mean_acc=mean(Accuracy)) %>% arrange(-mean_acc)
+p_categorical_2 <- acc_all_mod_rec_categorical_sep %>% group_by(brand3) %>% summarise(mean_acc=mean(Accuracy)) %>% arrange(-mean_acc)
+p_categorical_3 <- acc_all_mod_rec_categorical_sep %>% group_by(brand2) %>% summarise(mean_acc=mean(Accuracy)) %>% arrange(-mean_acc)
+```
+
+
+\captionsetup[table]{labelformat=empty}
+
+```{r sample3, results='asis', echo=F}
+t1 <- kable(top_5_category, format = "latex", booktabs = T) %>%
+    kable_styling(latex_options = c("striped"), font_size=8)
+t2 <- kable(p_categorical_3, format = "latex", booktabs = T) %>%
+    kable_styling(latex_options = c("striped"), font_size=8) 
+```
+
+```{r,echo=F}
+t1 <- gsub("\\begin{table}[H]",
+           "\\begin{minipage}{0.48\\linewidth}\n\\caption{\\label{tab:1}Top 5 Recipes}\n",
+           t1, fixed = TRUE)
+t1 <- gsub("\\end{table}", "\\end{minipage}", t1, fixed = TRUE) 
+
+t2 <- gsub("\\begin{table}[H]",
+           "\\begin{minipage}{0.48\\linewidth}\n\\caption{\\label{tab:2}Mean Acc Brand2 Strategy}",
+           t2, fixed = TRUE)
+t2 <- gsub("\\end{table}", "\\end{minipage}", t2, fixed = TRUE) 
+```
+
+```{r, results = "asis", echo=F}
+cat("",
+    "\\begin{table}[!htb]",
+    "\\centering",
+    t1,
+    t2,
+    "\\end{table}",
+    "",
+    sep = "\n") 
+```
+
+\captionsetup[table]{labelformat=empty}
+
+```{r sample4, results='asis', echo=F}
+t1 <- kable(p_categorical_1, format = "latex", booktabs = T) %>%
+    kable_styling(latex_options = c("striped"), font_size=8)
+t2 <- kable(p_categorical_2, format = "latex", booktabs = T) %>%
+    kable_styling(latex_options = c("striped"), font_size=8) 
+```
+
+```{r,echo=F}
+t1 <- gsub("\\begin{table}[H]",
+           "\\begin{minipage}{0.48\\linewidth}\n\\caption{\\label{tab:1}Mean Acc Fulltext Strategy}\n",
+           t1, fixed = TRUE)
+t1 <- gsub("\\end{table}", "\\end{minipage}", t1, fixed = TRUE) 
+
+t2 <- gsub("\\begin{table}[H]",
+           "\\begin{minipage}{0.48\\linewidth}\n\\caption{\\label{tab:2}Mean Acc Brand3 Strategy}",
+           t2, fixed = TRUE)
+t2 <- gsub("\\end{table}", "\\end{minipage}", t2, fixed = TRUE) 
+```
+
+```{r, results = "asis", echo=F}
+cat("",
+    "\\begin{table}[!htb]",
+    "\\centering",
+    t1,
+    t2,
+    "\\end{table}",
+    "",
+    sep = "\n") 
+```
+
+```{r, out.width = '65%', fig.align = "center", echo=F, eval=F}
+# Hashing seems pretty bad, let's take a look at what happens without it:
+acc_all_mod_rec_categorical_sep  %>%  filter(fulltext != "hashing") %>% 
+  group_by(model, brand2, brand3) %>% summarise(mean_acc = mean(Accuracy)) %>% 
+  ggplot(aes(x=brand2, y=mean_acc, group = model , color = model)) + facet_wrap(.~brand3, nrow=1) +
+  geom_point() + geom_line(alpha=.5, size=1.5) + labs(y="Mean Accuracy", subtitle = "Fulltext") 
+```
+
+I would like to run the 3 top recipes **with and without** brand_size, only with RF and Xgboost models: (See code)
+
+```{r, eval=F, echo=F}
+rec_drop_drop_keyword_keyword <-  recipe(category~. , data = snacks_tr_categorical5) %>%
+  step_rm("idx","ingredients","new_ingredient", "description", "serving_size_unit", "household_serving_fulltext", "brand") %>%
+  step_rm(nutr_to_rm, "n_distinct_cat", "brand_size") %>%
+  step_meanimpute(household_serving_fulltext_num, starts_with("score_")) %>%
+  step_mutate_at("household_serving_update", fn =  as.factor) %>%
+  step_mutate(serving_size =trim_fun(serving_size,bottom = T)) %>%
+  step_mutate(household_serving_fulltext_num =trim_fun(household_serving_fulltext_num,bottom = T)) %>%
+  step_mutate_at(starts_with("nutr_"),fn =  trim_fun) %>%
+  step_normalize(all_numeric(), - starts_with("score"), -starts_with("brnd_")) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_upsample(category, over_ratio = 1, seed= 123)
+
+rec_drop_numeric_keyword_keyword <-  recipe(category~. , data = snacks_tr_categorical5) %>%
+  step_rm("idx","ingredients","new_ingredient", "description", "serving_size_unit", "household_serving_fulltext", "brand") %>%
+  step_rm(nutr_to_rm, "brand_size") %>%
+  step_meanimpute(household_serving_fulltext_num, starts_with("score_")) %>%
+  step_mutate_at("household_serving_update", fn =  as.factor) %>%
+  step_mutate(serving_size =trim_fun(serving_size,bottom = T)) %>%
+  step_mutate(household_serving_fulltext_num =trim_fun(household_serving_fulltext_num,bottom = T)) %>%
+  step_mutate_at(starts_with("nutr_"),fn =  trim_fun) %>%
+  step_normalize(all_numeric(), - starts_with("score"), -starts_with("brnd_")) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_upsample(category, over_ratio = 1, seed= 123) 
+
+
+rec_drop_ncat_keyword_keyword <-  recipe(category~. , data = snacks_tr_categorical5) %>%
+  step_rm("idx","ingredients","new_ingredient","description","serving_size_unit", "household_serving_fulltext", "brand") %>%
+  step_rm(nutr_to_rm, "brand_size") %>%
+  step_meanimpute(household_serving_fulltext_num, starts_with("score_")) %>%
+  step_mutate_at("n_distinct_cat","household_serving_update", fn =  as.factor) %>%
+  step_mutate(serving_size =trim_fun(serving_size,bottom = T)) %>%
+  step_mutate(household_serving_fulltext_num =trim_fun(household_serving_fulltext_num,bottom = T)) %>%
+  step_mutate_at(starts_with("nutr_"),fn =  trim_fun) %>%
+  step_normalize(all_numeric(), - starts_with("score"), - starts_with("brnd_")) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_upsample(category, over_ratio = 1, seed= 123) 
+
+lst_rec_categorical2 <- list(
+  "rec_drop_drop_keyword_keyword" = rec_drop_drop_keyword_keyword,
+  "rec_drop_numeric_keyword_keyword" = rec_drop_numeric_keyword_keyword,
+  "rec_drop_ncat_keyword_keyword" = rec_drop_ncat_keyword_keyword)
+
+mod_lst_categorical2 <- list(
+                "mod_rf" = mod_rf ,
+                "mod_xgboost" = mod_xgboost)
+
+all_comb_mods_recs_categorical2 <- map_dfr(names(lst_rec_categorical2), .f =all_comb_mod_rec  , names_models = names(mod_lst_categorical2)  )
+```
+
+```{r, eval=F, echo=F}
+acc_all_mod_rec_categorical2 <- acc_fun( df_mods_recs = all_comb_mods_recs_categorical2,
+                                        lst_recs = lst_rec_categorical2  ,
+                                        lst_mods = mod_lst_categorical2 , 
+                                        cv_df =cv_splits_categorical ) 
+```
+
+```{r, echo=F}
+# write.csv(acc_all_mod_rec_categorical2, file = "resamples/categorical_acc2.csv", row.names = F)
+acc_all_mod_rec_categorical2 = read.csv("resamples/categorical_acc2.csv")
+```
+
+
+```{r, message=F, warning=F, echo=F}
+recs <- c("rec_brndsize_ncat_keyword_keyword", "rec_brndsize_numeric_keyword_keyword", 
+          "rec_brndsize_drop_keyword_keyword")
+df_res <- acc_all_mod_rec_categorical2 %>% bind_rows( (acc_all_mod_rec_categorical %>% 
+              filter(rec %in% recs, model %in% c("mod_xgboost", "mod_rf")) ) )  %>% 
+  separate(rec, c("rec", "brandsize", "n_cat", "brnd_keys", "fultext_keys"), sep = "_") %>%
+  group_by(brandsize,n_cat) %>%  summarise(mean_acc = mean(Accuracy)) %>% arrange(-mean_acc)
+                                             
+```
+
+```{r, echo=F}
+kable(df_res, "latex", booktabs = T) %>% kable_styling(latex_options = c("striped"), font_size = 8)
+```
+
+
+**Conclusions:**
+
+- Hashing on description seems to be very bad.
+- I want to continue with keyword for brand and fulltext.
+- You can see that there is not much difference if we include brand_size & n_distinct_cat or drop one or both of them.
+Anyway I want to leave `brand_size` for the next step when I add more features.
+`n_distinct_cat` - did not bring so much improvement, so I will throw it away.
+
+
+## Text Features  
+
+
+**Strategies**    
+**Ingredients + Description:**
+
+- keywords
+- hashing  (description - num terms 2^5 , ingredient - num terms 2^8)
+- drop
+
+Also, I want to reconsider at this point that I have most of the features the strategies: **upsample** or **smot**. Moreover, since I'm using now keyword from ingredient columne, I will consider whether or not to drop the **ingredient score** I created. 
+
+**In addition - I decided to finally choose the keywords for fulltext, brand, description ingredient in this stage.**
+
+I'll add the selected features from previots steps (same code - see notebook)
+
+```{r, warning=F, message=F, echo=F}
+# let's add the selected features from previous steps:
+# ingredient score
+snacks_tr_txt2 <- snacks_tr_txt %>% inner_join(create_scores(snacks_tr_txt,15) %>% select(-category), by = "idx" ) 
+
+# remove nutrients
+nutr_to_rm <- map_lgl(snacks_tr_txt2 %>% select(starts_with("nutr_")), is_remove)
+nutr_to_rm <- names(nutr_to_rm[nutr_to_rm==TRUE])
+
+# brand size
+snacks_tr_txt2 <- classify_brand_size(snacks_tr_txt2) 
+
+# n_distinct_cat - ignore it - I didn't include it in my models
+snacks_tr_txt2 <-  snacks_tr_txt2 %>%  group_by(brand) %>% 
+  summarise(n_distinct_cat = n_distinct(category)) %>% inner_join(snacks_tr_txt2)
+```
+
+```{r, echo=F, warning=F, message=F}
+# create data with words & counts of brand + entropy
+brnd_words_dat2 <- top_words_by_category_entropy(snacks_tr_txt2, "brand")
+# chosen words
+chosen_words2 <- order_words_by_entropy(brnd_words_dat2,word, 50,entrop_max =  1.5)
+chosen_words2 <- chosen_words2[!chosen_words2 == "mart"]  # wal and mart is the same, so I will drop one of them. 
+# plot_chosen_words(brnd_words_dat2, word,chosen_words2 )
+# add the best words to the data
+snacks_tr_txt3 <- merge_chosen_words(data =snacks_tr_txt2, col = "brand", 
+                                             order_words =chosen_words2, starter = "brnd_"  )
+```
+
+
+```{r, echo=F, warning=F, message=F}
+# fulltext
+snacks_tr_txt4 <- household_serving_update_fun(snacks_tr_txt3,household_serving_fulltext, key_words_list )
+fulltext_keys_data2 <- snacks_tr_txt4 %>% group_by(category, household_serving_update) %>%
+  count(sort = T) %>% group_by(household_serving_update) %>%
+  mutate(pct = n/sum(n), entropy = entropy_fun(pct) , sum_n = sum(n)) 
+
+order_fulltext_keys_by_entropy2 <- order_words_by_entropy(fulltext_keys_data2,"household_serving_update", 50,entrop_max =  1.6)
+# plot_chosen_words(fulltext_keys_data2, household_serving_update,order_fulltext_keys_by_entropy2 )
+# make everything that desn't belong to the selected word list "other"
+snacks_tr_txt5 <- snacks_tr_txt4 %>% 
+  mutate_at("household_serving_update" ,~(ifelse(.%in%order_fulltext_keys_by_entropy2, . , "other")))
+
+```
+
+```{r, warning=F, message=F, fig.height=2.5, fig.width=7, fig.align = "center"}
+# Let's see what words to take for description:  (same functions as on brand col)
+description_words_dat2 <- top_words_by_category_entropy(snacks_tr_txt5, "description")
+chosen_words_description <- order_words_by_entropy(description_words_dat2 ,word, 50,entrop_max =  1.6)
+# let's take a look at the top 15 chosen words for description
+plot_chosen_words(description_words_dat2, word, chosen_words_description[1:15]) + ggtitle("Description Top 15 Best Words")
+```
+
+Wow! We found very good words!
+
+```{r, warning=F, message=F}
+# add the best words to the data
+snacks_tr_txt6 <- merge_chosen_words(data =snacks_tr_txt5, col = "description", 
+                                             order_words =chosen_words_description, starter = "descr_"  )
+```
+
+
+
+```{r, eval=F}
+# ingredient
+ingred_dat <- n_top_ingredient(snacks_tr_txt6, 2000)  %>% group_by(ingredient) %>%
+  mutate(pct = n/sum(n), entropy = entropy_fun(pct) , sum_n = sum(n)) %>% arrange(-sum_n)
+chosen_ingred <- order_words_by_entropy(ingred_dat,"ingredient", 100 ,entrop_max =  1.5)
+# we have expressions and not words, so i can't ust merge_chosen_words:
+# I will use these two functions in order to create cols with the counts of thw chosen words:
+str_count_na <- function(string, pattern = "") {
+  n <- str_count(string, pattern)
+  ifelse(is.na(n), 0, n)  }
+count_words <- function(essays, chosen_words) {
+  counts <- map(chosen_words, ~str_count_na(essays, .x))
+  names(counts) = janitor::make_clean_names(str_c("ingrd_", chosen_words))
+  counts  }
+snacks_tr_txt7 <- snacks_tr_txt6 %>% 
+  bind_cols( map_dfr(snacks_tr_txt6$new_ingredient, count_words, chosen_words =chosen_ingred ) )
+```
+
+```{r, echo=F, eval=F}
+# write.csv(snacks_tr_txt7 , "saved_data/snacks_tr_txt7.csv", row.names = F)
+snacks_tr_txt7 <- read.csv("saved_data/snacks_tr_txt7.csv")
+```
+
+The recipe code can be seen in the notebook.
+
+```{r, echo=F, eval=F}
+
+rec_keyword_upsample_score <-  recipe(category~. , data = snacks_tr_txt7) %>%
+  step_rm("idx","ingredients","new_ingredient", "description", "serving_size_unit", "household_serving_fulltext", "brand") %>%
+  step_rm(nutr_to_rm, "n_distinct_cat") %>%
+  step_meanimpute(household_serving_fulltext_num, starts_with("score_")) %>%
+  step_mutate_at("household_serving_update", fn =  as.factor) %>%
+  step_mutate(serving_size =trim_fun(serving_size,bottom = T)) %>%
+  step_mutate(household_serving_fulltext_num =trim_fun(household_serving_fulltext_num,bottom = T)) %>%
+  step_mutate_at(starts_with("nutr_"),fn =  trim_fun) %>%
+  step_zv(all_numeric()) %>%
+  step_normalize(all_numeric(), -starts_with("score"), -starts_with("brnd_"), -starts_with("descr"), -starts_with("ingrd_")) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_upsample(category, over_ratio = 1, seed= 123) 
+
+rec_keyword_upsample_drop <-  recipe(category~. , data = snacks_tr_txt7) %>%
+  step_rm("idx","ingredients","new_ingredient", "description", "serving_size_unit", "household_serving_fulltext", "brand") %>%
+  step_rm(nutr_to_rm, starts_with("score"), "n_distinct_cat") %>%
+  step_meanimpute(household_serving_fulltext_num) %>%
+  step_mutate_at("household_serving_update", fn =  as.factor) %>%
+  step_mutate(serving_size =trim_fun(serving_size,bottom = T)) %>%
+  step_mutate(household_serving_fulltext_num =trim_fun(household_serving_fulltext_num,bottom = T)) %>%
+  step_mutate_at(starts_with("nutr_"),fn =  trim_fun) %>%
+  step_zv(all_numeric()) %>%
+  step_normalize(all_numeric(), -starts_with("brnd_"), -starts_with("descr"), -starts_with("ingrd_")) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_upsample(category, over_ratio = 1, seed= 123)
+
+rec_keyword_smote_score <-  recipe(category~. , data = snacks_tr_txt7) %>%
+  step_rm("idx","ingredients","new_ingredient", "description", "serving_size_unit", "household_serving_fulltext", "brand") %>%
+  step_rm(nutr_to_rm, "n_distinct_cat") %>%
+  step_meanimpute(household_serving_fulltext_num, starts_with("score_")) %>%
+  step_mutate_at("household_serving_update", fn =  as.factor) %>%
+  step_mutate(serving_size =trim_fun(serving_size,bottom = T)) %>%
+  step_mutate(household_serving_fulltext_num =trim_fun(household_serving_fulltext_num,bottom = T)) %>%
+  step_mutate_at(starts_with("nutr_"),fn =  trim_fun) %>%
+  step_zv(all_numeric()) %>%
+  step_normalize(all_numeric(), -starts_with("score"), -starts_with("brnd_"), -starts_with("descr"), -starts_with("ingrd_")) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_downsample(category, under_ratio = 1.5) %>%
+  step_smote(category, over_ratio = 1, seed = 123)
+
+rec_keyword_smote_drop <-  recipe(category~. , data = snacks_tr_txt7) %>%
+  step_rm("idx","ingredients","new_ingredient", "description", "serving_size_unit", "household_serving_fulltext", "brand") %>%
+  step_rm(nutr_to_rm, starts_with("score"), "n_distinct_cat") %>%
+  step_meanimpute(household_serving_fulltext_num) %>%
+  step_mutate_at("household_serving_update", fn =  as.factor) %>%
+  step_mutate(serving_size =trim_fun(serving_size,bottom = T)) %>%
+  step_mutate(household_serving_fulltext_num =trim_fun(household_serving_fulltext_num,bottom = T)) %>%
+  step_mutate_at(starts_with("nutr_"),fn =  trim_fun) %>%
+  step_zv(all_numeric()) %>%
+  step_normalize(all_numeric(), -starts_with("brnd_"), -starts_with("descr"), -starts_with("ingrd_")) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_downsample(category, under_ratio = 1.5) %>%
+  step_smote(category, over_ratio = 1, seed = 123)
+
+###
+
+rec_drop_upsample_score <-  recipe(category~. , data = snacks_tr_txt7) %>%
+  step_rm("idx","ingredients","new_ingredient", "description", "serving_size_unit", "household_serving_fulltext", "brand") %>%
+  step_rm(nutr_to_rm,  starts_with("descr_"), starts_with("ingrd_"), "n_distinct_cat") %>%
+  step_meanimpute(household_serving_fulltext_num, starts_with("score_")) %>%
+  step_mutate_at("household_serving_update", fn =  as.factor) %>%
+  step_mutate(serving_size =trim_fun(serving_size,bottom = T)) %>%
+  step_mutate(household_serving_fulltext_num =trim_fun(household_serving_fulltext_num,bottom = T)) %>%
+  step_mutate_at(starts_with("nutr_"),fn =  trim_fun) %>%
+  step_zv(all_numeric()) %>%
+  step_normalize(all_numeric(), -starts_with("score"), -starts_with("brnd_")) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_upsample(category, over_ratio = 1, seed= 123)
+
+rec_drop_upsample_drop <-  recipe(category~. , data = snacks_tr_txt7) %>%
+  step_rm("idx","ingredients","new_ingredient", "description", "serving_size_unit", "household_serving_fulltext", "brand") %>%
+  step_rm(nutr_to_rm, starts_with("score"), starts_with("descr_"), starts_with("ingrd_"), "n_distinct_cat") %>%
+  step_meanimpute(household_serving_fulltext_num) %>%
+  step_mutate_at("household_serving_update", fn =  as.factor) %>%
+  step_mutate(serving_size =trim_fun(serving_size,bottom = T)) %>%
+  step_mutate(household_serving_fulltext_num =trim_fun(household_serving_fulltext_num,bottom = T)) %>%
+  step_mutate_at(starts_with("nutr_"),fn =  trim_fun) %>%
+  step_zv(all_numeric()) %>%
+  step_normalize(all_numeric(), -starts_with("brnd_")) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_upsample(category, over_ratio = 1, seed= 123)
+
+rec_drop_smote_score <-  recipe(category~. , data = snacks_tr_txt7) %>%
+  step_rm("idx","ingredients","new_ingredient", "description", "serving_size_unit", "household_serving_fulltext", "brand") %>%
+  step_rm(nutr_to_rm, starts_with("descr_"), starts_with("ingrd_"), "n_distinct_cat") %>%
+  step_meanimpute(household_serving_fulltext_num, starts_with("score_")) %>%
+  step_mutate_at("household_serving_update", fn =  as.factor) %>%
+  step_mutate(serving_size =trim_fun(serving_size,bottom = T)) %>%
+  step_mutate(household_serving_fulltext_num =trim_fun(household_serving_fulltext_num,bottom = T)) %>%
+  step_mutate_at(starts_with("nutr_"),fn =  trim_fun) %>%
+  step_zv(all_numeric()) %>%
+  step_normalize(all_numeric(), -starts_with("score"), -starts_with("brnd_")) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_downsample(category, under_ratio = 1.5) %>%
+  step_smote(category, over_ratio = 1, seed = 123)
+
+rec_drop_smote_drop <-  recipe(category~. , data = snacks_tr_txt7) %>%
+  step_rm("idx","ingredients","new_ingredient", "description", "serving_size_unit", "household_serving_fulltext", "brand") %>%
+  step_rm(nutr_to_rm, starts_with("score"), starts_with("descr_"), starts_with("ingrd_"), "n_distinct_cat") %>%
+  step_meanimpute(household_serving_fulltext_num) %>%
+  step_mutate_at("household_serving_update", fn =  as.factor) %>%
+  step_mutate(serving_size =trim_fun(serving_size,bottom = T)) %>%
+  step_mutate(household_serving_fulltext_num =trim_fun(household_serving_fulltext_num,bottom = T)) %>%
+  step_mutate_at(starts_with("nutr_"),fn =  trim_fun) %>%
+  step_zv(all_numeric()) %>%
+  step_normalize(all_numeric(), -starts_with("brnd_")) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_downsample(category, under_ratio = 1.5) %>%
+  step_smote(category, over_ratio = 1, seed = 123)
+
+###
+rec_hashing_upsample_score <-  recipe(category~. , data = snacks_tr_txt7) %>%
+  step_rm("idx","ingredients", "serving_size_unit", "household_serving_fulltext", "brand") %>%
+  step_rm(nutr_to_rm, "n_distinct_cat", starts_with("ingrd_"), starts_with("descr_")) %>%
+  step_meanimpute(household_serving_fulltext_num, starts_with("score_")) %>%
+  step_mutate_at("household_serving_update", fn =  as.factor) %>%
+  step_mutate(serving_size =trim_fun(serving_size,bottom = T)) %>%
+  step_mutate(household_serving_fulltext_num =trim_fun(household_serving_fulltext_num,bottom = T)) %>%
+  step_mutate_at(starts_with("nutr_"),fn =  trim_fun) %>%
+  step_unknown(new_ingredient, description) %>%
+  step_tokenize(new_ingredient) %>%
+  step_texthash(new_ingredient, signed = FALSE, num_terms = 2^8) %>%
+  step_tokenize(description) %>%
+  step_texthash(description, signed = FALSE, num_terms = 2^5) %>%
+  step_zv(all_numeric()) %>%
+  step_normalize(all_numeric(), -starts_with("score"), -starts_with("brnd_"),  -starts_with("description_hash"),
+                -starts_with("new_ingredient_hash")) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_upsample(category, over_ratio = 1, seed= 123)
+
+rec_hashing_upsample_drop <-  recipe(category~. , data = snacks_tr_txt7) %>%
+  step_rm("idx","ingredients", "serving_size_unit", "household_serving_fulltext", "brand") %>%
+  step_rm(nutr_to_rm, starts_with("score_"), "n_distinct_cat", starts_with("ingrd_"), starts_with("descr_")) %>%
+  step_meanimpute(household_serving_fulltext_num) %>%
+  step_mutate_at("household_serving_update", fn =  as.factor) %>%
+  step_mutate(serving_size =trim_fun(serving_size,bottom = T)) %>%
+  step_mutate(household_serving_fulltext_num =trim_fun(household_serving_fulltext_num,bottom = T)) %>%
+  step_mutate_at(starts_with("nutr_"),fn =  trim_fun) %>%
+  step_unknown(new_ingredient, description) %>%
+  step_tokenize(new_ingredient) %>%
+  step_texthash(new_ingredient, signed = FALSE, num_terms = 2^8) %>%
+  step_tokenize(description) %>%
+  step_texthash(description, signed = FALSE, num_terms = 2^5) %>%
+  step_zv(all_numeric()) %>%
+  step_normalize(all_numeric(), -starts_with("score"), -starts_with("brnd_"), 
+                 -starts_with("description_hash"), -starts_with("new_ingredient_hash")) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_upsample(category, over_ratio = 1, seed= 123)
+
+
+
+rec_hashing_smote_score <-  recipe(category~. , data = snacks_tr_txt7) %>%
+  step_rm("idx","ingredients", "serving_size_unit", "household_serving_fulltext", "brand") %>%
+  step_rm(nutr_to_rm, "n_distinct_cat",starts_with("ingrd_"), starts_with("descr_")) %>%
+  step_meanimpute(household_serving_fulltext_num, starts_with("score_")) %>%
+  step_mutate_at("household_serving_update", fn =  as.factor) %>%
+  step_mutate(serving_size =trim_fun(serving_size,bottom = T)) %>%
+  step_mutate(household_serving_fulltext_num =trim_fun(household_serving_fulltext_num,bottom = T)) %>%
+  step_mutate_at(starts_with("nutr_"),fn =  trim_fun) %>%
+  step_unknown(new_ingredient, description) %>%
+  step_tokenize(new_ingredient) %>%
+  step_texthash(new_ingredient, signed = FALSE, num_terms = 2^8) %>%
+  step_tokenize(description) %>%
+  step_texthash(description, signed = FALSE, num_terms = 2^5) %>%
+  step_zv(all_numeric()) %>%
+  step_normalize(all_numeric(), -starts_with("score"), -starts_with("brnd_"),
+                 -starts_with("description_hash"), -starts_with("new_ingredient_hash")) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_downsample(category, under_ratio = 1.5) %>%
+  step_smote(category, over_ratio = 1, seed = 123)
+
+
+rec_hashing_smote_drop <-  recipe(category~. , data = snacks_tr_txt7) %>%
+  step_rm("idx","ingredients", "serving_size_unit", "household_serving_fulltext", "brand") %>%
+  step_rm(nutr_to_rm,  starts_with("score_"), "n_distinct_cat", starts_with("ingrd_"), starts_with("descr_")) %>%
+  step_meanimpute(household_serving_fulltext_num) %>%
+  step_mutate_at("household_serving_update", fn =  as.factor) %>%
+  step_mutate(serving_size =trim_fun(serving_size,bottom = T)) %>%
+  step_mutate(household_serving_fulltext_num =trim_fun(household_serving_fulltext_num,bottom = T)) %>%
+  step_mutate_at(starts_with("nutr_"),fn =  trim_fun) %>%
+  step_unknown(new_ingredient) %>%
+  step_tokenize(new_ingredient) %>%
+  step_texthash(new_ingredient, signed = FALSE, num_terms = 2^8) %>% 
+  step_tokenize(description) %>%
+  step_texthash(description, signed = FALSE, num_terms = 2^5) %>%
+  step_zv(all_numeric()) %>%
+  step_normalize(all_numeric(), -starts_with("brnd_"), -starts_with("description_hash"), -starts_with("new_ingredient_hash")) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>%
+  step_downsample(category, under_ratio = 1.5) %>%
+  step_smote(category, over_ratio = 1, seed = 123) 
+
+
+
+
+```
+
+```{r, eval =F, echo=F}
+lst_rec_text <- list(
+  "rec_keyword_upsample_score" = rec_keyword_upsample_score,
+  "rec_keyword_upsample_drop" = rec_keyword_upsample_drop,
+  "rec_keyword_smote_score" = rec_keyword_smote_score,
+  "rec_keyword_smote_drop" = rec_keyword_smote_drop,
+  "rec_drop_upsample_score" = rec_drop_upsample_score,
+  "rec_drop_upsample_drop" = rec_drop_upsample_drop,
+  "rec_drop_smote_score" = rec_drop_smote_score,
+  "rec_drop_smote_drop" = rec_drop_smote_drop,
+  "rec_hashing_upsample_score" = rec_hashing_upsample_score,
+  "rec_hashing_upsample_drop" = rec_hashing_upsample_drop,
+  "rec_hashing_smote_score" = rec_hashing_smote_score,
+  "rec_hashing_smote_drop" = rec_hashing_smote_drop
+)
+```
+
+```{r, eval=F, echo=F}
+mod_lst_txt <- list(
+                "mod_rf" = mod_rf ,
+                "mod_xgboost" = mod_xgboost,
+                "mod_svm_rbf" = mod_svm_rbf,
+                 "mod_svm_poly" = mod_svm_poly
+                )
+
+all_comb_mods_recs_txt <- map_dfr(names(lst_rec_text), .f =all_comb_mod_rec  , names_models = names(mod_lst_txt)  )
+
+```
+
+```{r, echo=F, eval=F}
+set.seed(123)
+cv_splits_txt <- vfold_cv(snacks_tr_txt7,v=10, strata  = category)
+```
+
+
+```{r, eval=F, echo=F}
+acc_all_mod_rec_txt<- acc_fun( df_mods_recs = all_comb_mods_recs_txt , lst_recs = lst_rec_text  ,
+                                        lst_mods = mod_lst_txt , cv_df =cv_splits_txt ) 
+
+```
+
+
+
+```{r, echo=F}
+#write.csv(acc_all_mod_rec_txt, file = "resamples/acc_all_mod_rec_txt_words.csv", row.names = F)
+acc_all_mod_rec_txt = read.csv("resamples/acc_all_mod_rec_txt_words.csv")
+```
+
+```{r eval=F, echo=F}
+acc_all_mod_rec_txt %>% group_by(rec,model) %>% summarise(mean_acc=mean(Accuracy),
+                                                          min_acc= min(Accuracy)) %>% arrange(-mean_acc)
+acc_all_mod_rec_txt %>% group_by(model) %>% summarise(mean_acc=mean(Accuracy),
+                                                          min_acc= min(Accuracy)) 
+```
+
+```{r, echo=F, fig.align = "center", fig.height=3.8, fig.width=7}
+txt_p1 <- acc_all_mod_rec_txt  %>% group_by(model, rec) %>% summarise(mean_acc = mean(Accuracy))%>%
+  mutate(rec = str_replace(rec,"rec_", "")) %>%
+  ggplot(aes(x=rec, y=mean_acc, group = model , color = model)) +
+  labs(x="", y="Mean Accuracy", title = "Accuracy for Text Recipes") + 
+  geom_point() + geom_line(alpha=.5, size=1.5) + theme(axis.text.x = element_text(angle =15, h=1, size =7)) +
+  theme(legend.position = "") 
+
+p_check <- acc_all_mod_rec_txt %>%  separate(rec, c("rec", "txt_featuers", "imbalance", "ing_score")) %>%
+  select(-rec) %>% filter(txt_featuers =="keyword") %>% 
+  group_by(model, ing_score, imbalance ,txt_featuers) %>% summarise(mean_acc= mean(Accuracy)) %>% 
+  ggplot(aes(x=ing_score, y= mean_acc, color =model , group=model)) +
+  geom_point() + geom_line(alpha=.5, size=1.5) + facet_wrap(.~imbalance) + theme(legend.position = "right") +
+  labs(x="", y="", subtitle = "Mean Accuracy only for keywords recipes") + scale_color_discrete(name="") +
+  theme(legend.text = element_text(size=7), legend.text.align = 0)
+grid.arrange(txt_p1, p_check, nrow=2, heights = c(1.4,1) )
+```
+
+
+```{r, echo=F, eval=F}
+# Top 10 Recipes
+top_10_txt <- acc_all_mod_rec_txt %>% 
+  separate(rec, c("rec", "text", "imbalance", "ing_score"), sep ="_") %>%
+  filter(text != "drop") %>% group_by(model, text, imbalance, ing_score) %>%
+  summarise(mean_acc = mean(Accuracy)) %>%
+  arrange(-mean_acc) %>% head(10)
+```
+
+```{r, echo=F, eval=F}
+kable(top_10_txt , "latex", booktabs = T) %>% kable_styling(latex_options = c("striped"), font_size=9)
+```
+
+
+Hashing seems to be pretty bad, and drop less is better too. The four models are quite similar. svm and rf have greatly improved and even sometimes exceed xgboost.
+
+**Conclusions:** from looking at the **average** and **minimum** accuracy over the folds by recipe & model I decided to continue with:
+
+- SVM rbf: keywords, upsample, ingredient score
+- Random Forest: keywords, upsample, drop ingredient score
+- Xgboost - keywords, upsample, drop ingredient score
+
+**More Desicions:** (1) I decided to drop svm poly model because on average (including previous steps) it is less good than the others (consideration of running time).  
+(2) I'll save the selected words in this section for: barnd, fulltext, description, ingredient. I'll also use them in the final model. Here are the no. of words:
+
+```{r, eval=F, echo=F}
+list_chosen_words <- list("chosen_word_fulltext" = order_fulltext_keys_by_entropy2,
+                          "chosen_word_brnd" = chosen_words2,
+                          "chosen_word_descr" = chosen_words_description,
+                          "chosen_word_ingrd" = chosen_ingred)
+```
+
+```{r, echo=F}
+# saveRDS(list_chosen_words, "chosen_words_txt.rds")
+list_chosen_words <- readRDS("chosen_words_txt.rds")
+kable( map_dfr(list_chosen_words, length)) %>%
+  kable_styling(latex_options = c("striped"), font_size=9)
+```
+I created `full_features()` function that take care of adding all the relevant features I decided to add in the previous steps to the final model. (See code)
+
+```{r, echo=F}
+# For the test set:I'll use 15 top ingredients from food_train dataset
+create_scores_for_test <- function(data,n) {
+  top_n_ing <- n_top_ingredient(food_train_initial, n)  # take the 15 most popular from all the train set
+  top_n_ing_by_category <-  data.frame( tapply(top_n_ing$ingredient, top_n_ing$category, list))
+  as_tibble(t(map_dfc( data$new_ingredient, .f = score_by_cat_fixed, top_by_category =top_n_ing_by_category ))) %>%
+  set_names(names(top_n_ing_by_category))  %>% rename_all(~(paste0("score_", {{n}}, "_" , .))) %>%
+    mutate(idx = data$idx)
+}
+
+full_features <- function(df, is_test =F) {
+  # add ingredient score - if it is the test set -  the function of the score varies a bit.
+  if(is_test) {
+    df1 <- df %>% inner_join(create_scores_for_test(df,15) , by = "idx" )
+  } else {
+   df1 <- df %>% inner_join(create_scores(df,15) %>% select(-category), by="idx") 
+  }
+  # add  brand size
+  df2 <- classify_brand_size(df1) 
+  # classify by chosen words for brand, fulltext, descroption 
+  df3 <- merge_chosen_words(data =df2, col = "brand", 
+                            order_words = list_chosen_words$chosen_word_brnd, starter = "brnd_"  ) 
+  
+  df4 <- household_serving_update_fun(df3,household_serving_fulltext, key_words_list ) %>%
+    mutate_at("household_serving_update" ,~(ifelse(.%in% list_chosen_words$chosen_word_fulltext, . , "other"))) 
+  
+  df5 <-  merge_chosen_words(data =df4, col = "description", 
+                       order_words =list_chosen_words$chosen_word_descr, starter = "descr_"  )
+  # add counts of chosen ingredients 
+  df6 <- df5 %>% 
+  bind_cols( map_dfr(df5$new_ingredient, count_words, chosen_words =list_chosen_words$chosen_word_ingrd ) )
+  
+  df6 %>% select(-ingredients, -serving_size_unit, -brand, -household_serving_fulltext,
+                 -new_ingredient, -description) %>%
+    mutate_if(is.logical, as.factor) %>%
+    mutate_if(is.character, as.factor) 
+}
+
+```
+
+
+
+## Tuning
+
+**From now on I will get rid of near zero variance nutrients using `step_nzv()` instead of using `nutr_to_rm`**
+
+
+```{r, message=F, eval=F}
+snacks_tr_tunning2 <- full_features(snacks_tr_tunning)
+```
+
+
+```{r, eval=F, echo=F}
+set.seed(123)
+cv_splits_tuning <- vfold_cv(snacks_tr_tunning2,v=10, strata  = category)
+```
+
+### Tuning Random Forest
+
+Final recipe for Random Forest:
+
+```{r, eval=F}
+final_rec_random_forest <-  recipe(category~. , data = snacks_tr_tunning2 %>% select(-idx) ) %>%
+  step_nzv(starts_with("nutr_"), freq_cut = 99/1)  %>%
+  step_rm(starts_with("score_")) %>%
+  step_meanimpute(household_serving_fulltext_num) %>%
+  step_mutate(serving_size =trim_fun(serving_size,bottom = T)) %>%
+  step_mutate(household_serving_fulltext_num =trim_fun(household_serving_fulltext_num,bottom = T)) %>%
+  step_mutate_at(starts_with("nutr_"),fn =  trim_fun) %>%
+  step_zv(all_numeric()) %>%
+  step_normalize(all_numeric(), -starts_with("score"), -starts_with("brnd_"),
+                 -starts_with("descr"), -starts_with("ingrd_")) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_upsample(category, over_ratio = 1, seed= 123) 
+```
+
+```{r, eval=F, echo=F}
+tune_rf <- rand_forest( mtry = tune(), trees = 1000, min_n = tune()) %>%
+  set_mode("classification") %>% set_engine("ranger")
+tune_wf <- workflow() %>% add_recipe(final_rec_random_forest) %>% add_model(tune_rf)
+```
+I want to set the number of the tree to be 1000 since more trees are better for random forest (average of trees). Thus I will have to tune `mtry` and `min_n`.
+I first tried a grid created by R to get an idea of which combination of parameters is good. Using the results, I chose values intelligently for another grid to test(see code). Here are the top 5 combinations:
+```{r, eval=F, echo=F}
+set.seed(45)
+tune_res <- tune_grid(tune_wf, resamples = cv_splits_tuning, grid = 20)
+```
+
+```{r, echo=F}
+# saveRDS(tune_res, "tuning/rf_tuning_1.rds")
+tune_res <- readRDS("tuning/rf_tuning_1.rds")
+```
+
+```{r,  eval=F, echo=F}
+tune_res %>% show_best("accuracy") %>% select(-.estimator)
+```
+
+```{r, out.width = '50%', fig.align = "center", eval=F, echo=F}
+tune_res %>%
+  collect_metrics() %>%
+  filter(.metric == "accuracy") %>% select(mean, min_n, mtry) %>%
+  pivot_longer(min_n:mtry, values_to = "value", names_to = "parameter") %>%
+  ggplot(aes(value, mean, color = parameter)) +
+  geom_point(show.legend = F) + facet_wrap(~parameter, scales = "free_x")
+  
+```
+
+```{r, eval =F, echo = F}
+rf_grid <- grid_regular(min_n(range= c(2, 60)), mtry(range =  c(5,100)), levels = c(12,6))
+
+set.seed(45)
+regular_results <- tune_grid(
+  tune_wf,  resamples = cv_splits_tuning,
+  grid = rf_grid,
+  control = control_grid(verbose = TRUE)
+)
+
+```
+
+```{r, echo=F}
+# saveRDS(regular_results, "tuning/rf_tuning_2.rds")
+regular_results <- readRDS("tuning/rf_tuning_2.rds")
+```
+
+```{r, echo=F}
+top_5_tun_rf <- regular_results %>% show_best("accuracy") %>% select(-.estimator)
+kable(top_5_tun_rf , "latex", booktabs = T) %>%
+  kable_styling(latex_options = c("striped"), font_size=8)
+```
+
+
+```{r, fig.height=3.1 , fig.width=6, fig.align = "center", echo=F}
+regular_results %>%
+  collect_metrics() %>%
+  filter(.metric == "accuracy") %>% select(mean, min_n, mtry) %>%
+  mutate(min_n = factor(min_n)) %>%
+  ggplot(aes(x = mtry, y= mean, color = min_n)) +
+  geom_point() + geom_line(alpha=.5, size = 1.5) + theme(text = element_text(size=9)) + 
+  labs(y = "Mean Accuracy", title = "Tuning Random Forest")
+```
+
+I'll continue with the 2 best combinations for the model selection stage.
+
+
+### Tuning Xgboost
+
+Final recipe for xgboost same as for random forest. 
+
+```{r, eval =F, echo=F}
+final_rec_xgboost <-  recipe(category~. , data = snacks_tr_tunning2 %>% select(-idx) ) %>%
+  step_nzv(starts_with("nutr_"), freq_cut = 99/1)  %>%
+  step_rm(starts_with("score_")) %>%
+  step_meanimpute(household_serving_fulltext_num) %>%
+  step_mutate(serving_size =trim_fun(serving_size,bottom = T)) %>%
+  step_mutate(household_serving_fulltext_num =trim_fun(household_serving_fulltext_num,bottom = T)) %>%
+  step_mutate_at(starts_with("nutr_"),fn =  trim_fun) %>%
+  step_zv(all_numeric()) %>%
+  step_normalize(all_numeric(), -starts_with("score"), -starts_with("brnd_"),
+                 -starts_with("descr"), -starts_with("ingrd_")) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_upsample(category, over_ratio = 1, seed= 123) 
+```
+
+This model has many parameters to tune. I decided to stick with a number of 1000 trees, and do tuning on `tree_depth`, `min_n`, `lose_reduction`, `mtry`, `learn_rate`.  For some of the parameters I selected a range of values that I belive the optimal values will be in.
+Since these are a lot of parameters, I will use `grid_latin_hypercube` function which will create a grid for me that covers pretty much all of the options space.
+
+```{r, eval=F, echo=F}
+xgb_spec <- boost_tree( trees = 1000,tree_depth = tune(), min_n = tune() ,
+  loss_reduction = tune(), mtry = tune() , learn_rate = tune() ) %>%
+  set_engine("xgboost") %>% set_mode("classification")
+```
+
+```{r, eval =F, echo=F}
+xgb_grid <- grid_latin_hypercube(
+  tree_depth(range= c(2,12)),
+  min_n(range = c(1,30)),
+  loss_reduction(),
+  mtry(range = c(10,130)),
+  learn_rate(),
+  size = 50 )
+```
+
+
+```{r, eval=F, echo=F}
+set.seed(45)
+xgb_res_manual <- tune_grid(
+  object = xgb_spec,
+  preprocessor = final_rec_xgboost,
+  resamples = cv_splits_tuning,
+  grid = xgb_grid,
+  control = control_grid(verbose = TRUE)
+  )
+```
+
+```{r, echo =F}
+# saveRDS(xgb_res_manual, "tuning/xgb_tuning_manual.rds")
+xgb_res_manual <- readRDS("tuning/xgb_tuning_manual.rds")
+```
+
+5 best combinations: (I'll continue with best two)
+
+```{r, echo=F}
+top_5_tune_xgb <- xgb_res_manual %>% show_best("accuracy", n=5) %>% select(-.estimator)
+kable(top_5_tune_xgb , "latex", booktabs = T) %>%
+  kable_styling(latex_options = c("striped"), font_size=9)
+```
+
+
+
+### Tuning SVM
+
+The recipe is the same as the xgboost recipe, except that I now normalize all numeric variables (since it is SVM model) and used score ingredient.  We have to tune `cost`,` rbf_sigma`. I chose range of values that I belive the optimal parameters will be in. 
+
+```{r,eval=F, echo=F}
+final_rec_svm_rbf <-  recipe(category~. , data = snacks_tr_tunning2 %>% select(-idx)  ) %>%
+  step_nzv(starts_with("nutr_"), freq_cut = 99/1)  %>%
+  step_meanimpute(household_serving_fulltext_num, starts_with("score_")) %>%
+  step_mutate(serving_size =trim_fun(serving_size,bottom = T)) %>%
+  step_mutate(household_serving_fulltext_num =trim_fun(household_serving_fulltext_num,bottom = T)) %>%
+  step_mutate_at(starts_with("nutr_"),fn =  trim_fun) %>%
+  step_zv(all_numeric()) %>%
+  step_normalize(all_numeric()) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_upsample(category, over_ratio = 1, seed= 123) 
+```
+`
+
+```{r, echo=F, eval=F}
+# due to severe memory limitations in my computer, I couldn't run tune_grid() 
+# therefore I did it in a for loop so if it will crash some of the results will be saved.
+lst_rec_tune_svm <- list("final_rec_svm_rbf"= final_rec_svm_rbf)
+acc_svm_tune <- tibble()
+set.seed(45)
+# cost  2^() , rbf_sigma = 10^() 
+grid_manual_svm <-  grid_regular(cost(range(-2,6)) ,
+                                 rbf_sigma(range(-5,0)), 
+                                 levels = c(8,6) )
+
+for(row_idx in 6:nrow(grid_manual_svm)) {
+  cost <- grid_manual_svm$cost[row_idx]
+  rbf <-  grid_manual_svm$rbf_sigma[row_idx]
+  
+  lst_mod_svm_tune <- list(svm_rbf(cost = cost, rbf_sigma =  rbf) %>%
+                               set_engine("kernlab") %>% set_mode("classification"))
+  names(lst_mod_svm_tune) <-  paste("svm", row_idx, sep = "_")
+  
+  acc_svm_tune <- acc_svm_tune %>% 
+    bind_rows(
+      acc_fun( df_mods_recs = tibble("name_rec" = "final_rec_svm_rbf",
+                                     "model_name" = names(lst_mod_svm_tune)) ,
+               lst_recs = lst_rec_tune_svm  ,
+               lst_mods = lst_mod_svm_tune , cv_df =cv_splits_tuning ) %>%
+        mutate(cost = cost, rbf_sigma= rbf)
+      )
+}  
+
+
+# default parameters:
+lst_mod_svm_tune <- list("svm_default" = svm_rbf() %>%
+                               set_engine("kernlab") %>% set_mode("classification"))
+  
+acc_svm_dafault <- acc_fun( df_mods_recs = tibble("name_rec" = "final_rec_svm_rbf",
+                                     "model_name" = names(lst_mod_svm_tune)) ,
+               lst_recs = lst_rec_tune_svm  ,
+               lst_mods = lst_mod_svm_tune , cv_df =cv_splits_tuning ) %>%
+        mutate(cost = "default", rbf_sigma= "default")
+```
+
+```{r, echo=F}
+# write.csv(acc_svm_tune, "tuning/svm_tune.csv", row.names = F)
+acc_svm_tune <- read.csv("tuning/svm_tune.csv")
+```
+
+
+The results from the two grids I chose: 
+```{r,  fig.height=2.8 , fig.width=6, fig.align = "center", echo=F}
+acc_svm_tune %>% group_by(model) %>% 
+  summarise(cost = mean(cost), rbf_sigma = mean(rbf_sigma) , 
+                                                mean_acc = mean(Accuracy))  %>% 
+  select(mean_acc, cost, rbf_sigma) %>%
+  mutate(rbf_sigma = factor(rbf_sigma)) %>%
+  ggplot(aes(x =cost , y= mean_acc, color = rbf_sigma)) +
+  geom_point()  + geom_line(alpha=.5, size = 1.5) +
+  labs(y= "Mean Accuracy", title = "Tuning SVM")
+```
+
+5 best combinations: (I'll continue with best two)
+```{r, echo=F}
+top_5_svm_tune <- acc_svm_tune %>% group_by(model) %>% 
+  summarise(cost = mean(cost), rbf_sigma = mean(rbf_sigma) , 
+            mean_acc = mean(Accuracy)) %>% select(-model) %>%
+  arrange(-mean_acc) %>% head(5)
+kable(top_5_svm_tune, "latex", booktabs = T) %>%
+  kable_styling(latex_options = c("striped"), font_size=9)
+```
+
+I got from default parameters mean accuracy of 0.896 so I'll continue with default parameters and with the best combination from the grid.
+
+## MODEL SELECTION
+
+Now, I will run each of the models on the 2 best combinations from the tuning step, then I will choose the best.
+
+```{r, message=F, warning=F, eval=F}
+snacks_tr_selection2 <- full_features(snacks_tr_selection) # data preparation
+```
+
+
+```{r, echo=F, eval=F}
+# recieps
+final_rec_rf_xgb <-  recipe(category~. , data = snacks_tr_selection2 %>% select(-idx) ) %>%
+  step_nzv(starts_with("nutr_"), freq_cut = 99/1)  %>%
+  step_rm(starts_with("score_")) %>%
+  step_meanimpute(household_serving_fulltext_num) %>%
+  step_mutate(serving_size =trim_fun(serving_size,bottom = T)) %>%
+  step_mutate(household_serving_fulltext_num =trim_fun(household_serving_fulltext_num,bottom = T)) %>%
+  step_mutate_at(starts_with("nutr_"),fn =  trim_fun) %>%
+  step_zv(all_numeric()) %>%
+  step_normalize(all_numeric(), -starts_with("score"), -starts_with("brnd_"),
+                 -starts_with("descr"), -starts_with("ingrd_")) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_upsample(category, over_ratio = 1, seed= 123) 
+
+final_rec_svm_rbf <-  recipe(category~. , data = snacks_tr_selection2 %>% select(-idx)  ) %>%
+  step_nzv(starts_with("nutr_"), freq_cut = 99/1)  %>%
+  step_meanimpute(household_serving_fulltext_num, starts_with("score_")) %>%
+  step_mutate(serving_size =trim_fun(serving_size,bottom = T)) %>%
+  step_mutate(household_serving_fulltext_num =trim_fun(household_serving_fulltext_num,bottom = T)) %>%
+  step_mutate_at(starts_with("nutr_"),fn =  trim_fun) %>%
+  step_zv(all_numeric()) %>%
+  step_normalize(all_numeric()) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_upsample(category, over_ratio = 1, seed= 123) 
+```
+
+```{r, eval=F}
+# definition of final models:
+final_mod_rf_1 <- rand_forest( mtry = 24, trees = 1000, min_n = 12) %>%
+  set_mode("classification") %>% set_engine("ranger")
+final_mod_rf_2 <- rand_forest( mtry =24, trees = 1000, min_n = 7) %>% 
+  set_mode("classification") %>% set_engine("ranger")
+final_mod_xgb_1 <- boost_tree(
+  trees = 1000, tree_depth = 7, min_n = 5 , loss_reduction = 0.0000167, mtry = 102 , learn_rate = 0.0318) %>%
+  set_engine("xgboost") %>% set_mode("classification")
+final_mod_xgb_2 <- boost_tree(
+  trees = 1000, tree_depth = 11, min_n = 11 , loss_reduction =1.11, mtry = 27 , learn_rate =0.0182)%>%
+  set_engine("xgboost") %>% set_mode("classification")
+final_mod_svm_1 <- svm_rbf() %>% set_engine("kernlab") %>% set_mode("classification") #default
+final_mod_svm_2 <- svm_rbf(cost = 2.6918, rbf_sigma = 0.001) %>%
+  set_engine("kernlab") %>% set_mode("classification")
+list_selection_models <- list( # final list of models
+  "final_mod_rf_1" = final_mod_rf_1, "final_mod_rf_2" = final_mod_rf_2,
+  "final_mod_xgb_1" = final_mod_xgb_1, "final_mod_xgb_2" = final_mod_xgb_2,
+  "final_mod_svm_1" = final_mod_svm_1, "final_mod_svm_2" = final_mod_svm_2 )
+```
+
+
+
+```{r, eval=F}
+list_selection_rec <- list( # the final list of recipes:
+ "final_rec_rf_xgb" = final_rec_rf_xgb,
+  "final_rec_rf_xgb" = final_rec_rf_xgb ,
+  "final_rec_svm_rbf" = final_rec_svm_rbf )
+```
+
+```{r, echo=F, eval=F}
+all_comb_mods_selection = tibble("name_rec" = c(rep("final_rec_rf_xgb",2),
+                                                rep("final_rec_rf_xgb",2)),
+                                                rep("final_rec_svm_rbf" ,2)) ,
+                                 "model_name" = c("final_mod_rf_1","final_mod_rf_2",  
+                                                 "final_mod_xgb_1" ,"final_mod_xgb_2" , 
+                                                 "final_mod_svm_1","final_mod_svm_2"))
+```
+
+
+```{r, eval =F, echo=F}
+set.seed(123)
+cv_splits_selection <- vfold_cv(snacks_tr_selection2 ,v=10, strata  = category)
+```
+
+```{r, eval =F, echo=F}
+acc_all_mod_rec_selection_svm  <- acc_fun( df_mods_recs = all_comb_mods_selection ,
+                                        lst_recs = list_selection_rec  ,
+                                        lst_mods = list_selection_models ,
+                                        cv_df =cv_splits_selection )
+```
+
+```{r, echo=F}
+# write.csv(acc_all_mod_rec_selection, "selection/all_combinations.csv", row.names = F)
+acc_all_mod_rec_selection <- read.csv("selection/all_combinations.csv")
+```
+
+
+```{r, echo=F}
+# Results:
+res_selection <- acc_all_mod_rec_selection %>% group_by(model,rec) %>% 
+  summarise(mean_acc = mean(Accuracy)) %>% arrange(-mean_acc)
+```
+
+
+
+```{r, echo=F}
+kable(res_selection , "latex", booktabs = T) %>%
+  kable_styling(latex_options = c("striped"), font_size=9)
+```
+
+I decided to continue to assessment with the best combination of each model, ie with `final_mod_rf_1`, `final_mod_xgb_1`, `final_mod_svm_1`.
+
+
+
+
+
+
+
+## Assessment of The Final Models on the Test Set
+
+
+
+```{r, eval = F}
+train_combained <- full_features(snacks_tr) 
+test_comb <- full_features(snacks_te)
+```
+
+
+```{r, echo=F}
+# write.csv(train_combained, "final_data/train_combained.csv", row.names = F)
+# write.csv(test_comb, "final_data/test_comb.csv", row.names = F)
+train_combained <- read.csv("final_data/train_combained.csv")
+test_comb <- read.csv("final_data/test_comb.csv")
+```
+
+I made a recipe to get data with hashing to put into the neural network in Python(without upsample). See code.
+
+```{r, eval =F, echo=F}
+# no upsample
+reciepe_for_network  <-  recipe(category~. , data = train_combained  ) %>%
+  step_nzv(starts_with("nutr_"), freq_cut = 99/1)  %>%
+  step_meanimpute(household_serving_fulltext_num, starts_with("score_")) %>%
+  step_mutate(serving_size =trim_fun(serving_size,bottom = T)) %>%
+  step_mutate(household_serving_fulltext_num =trim_fun(household_serving_fulltext_num,bottom = T)) %>%
+  step_mutate_at(starts_with("nutr_"),fn =  trim_fun) %>%
+  step_zv(all_numeric()) %>%
+  step_normalize(all_numeric(), -idx) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) 
+
+prep_to_network = prep(reciepe_for_network, train_combained)
+#bakin
+train_combained_for_python = bake(prep_to_network, train_combained)
+validation_combained_for_python = bake(prep_to_network, test_comb)
+
+# saving
+write.csv(train_combained_for_python, "final_data/train_combained_for_python.csv", row.names = F)
+write.csv(validation_combained_for_python, "final_data/validation_combained_for_python.csv", row.names = F)
+```
+
+
+
+```{r, echo=F, eval=F}
+final_rec_svm_rbf <-  recipe(category~. , data = train_combained %>% select(-idx)  ) %>%
+  step_nzv(starts_with("nutr_"), freq_cut = 99/1)  %>%
+  step_meanimpute(household_serving_fulltext_num, starts_with("score_")) %>%
+  step_mutate(serving_size =trim_fun(serving_size,bottom = T)) %>%
+  step_mutate(household_serving_fulltext_num =trim_fun(household_serving_fulltext_num,bottom = T)) %>%
+  step_mutate_at(starts_with("nutr_"),fn =  trim_fun) %>%
+  step_zv(all_numeric()) %>%
+  step_normalize(all_numeric()) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_upsample(category, over_ratio = 1, seed= 123) 
+
+final_rec_rf_xgb <-  recipe(category~. , data = train_combained %>% select(-idx) ) %>%
+  step_nzv(starts_with("nutr_"), freq_cut = 99/1)  %>%
+  step_rm(starts_with("score_")) %>%
+  step_meanimpute(household_serving_fulltext_num) %>%
+  step_mutate(serving_size =trim_fun(serving_size,bottom = T)) %>%
+  step_mutate(household_serving_fulltext_num =trim_fun(household_serving_fulltext_num,bottom = T)) %>%
+  step_mutate_at(starts_with("nutr_"),fn =  trim_fun) %>%
+  step_zv(all_numeric()) %>%
+  step_normalize(all_numeric(), -starts_with("score"), -starts_with("brnd_"),
+                 -starts_with("descr"), -starts_with("ingrd_")) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_upsample(category, over_ratio = 1, seed= 123) 
+```
+
+Let's compute the test error on the 3 chosen models (of xgboost and of random forest). See code.
+
+
+```{r, eval=F, echo=F}
+compute_test_acc <- function(rec, model, rec_name, model_name) {
+  final_prep = prep(rec, train_combained) # prep
+  train_baked = bake(final_prep, train_combained) # bake train
+  test_baked = bake(final_prep, test_comb)  # bake test
+  
+  fit_final_mod = model %>%  fit (category ~., data = train_baked) # fit
+  pred_test = fit_final_mod %>% # predict
+    predict(new_data = test_baked, type = "class") %>%
+    mutate(truth = test_baked$category)
+  
+  acc = mean(pred_test$truth==pred_test$.pred_class)
+  return(list("model" = model_name, "recipe" = rec_name , "accuracy"= acc, fit = fit_final_mod ))
+  }
+```
+
+
+```{r, eval=F, echo=F}
+rf1 <- compute_test_acc(final_rec_rf_xgb ,final_mod_rf_1, "rf", "rec2")
+xgb1 <- compute_test_acc(final_rec_rf_xgb ,final_mod_xgb_1, "xgb1", "rec1")
+svm1 <- compute_test_acc(final_rec_svm_rbf ,final_mod_svm_1, "svm1", "rec1")
+# saveRDS(rf1,"fit_objects/results_rf1.rds" )
+# saveRDS(xgb1,"fit_objects/results_xgb1.rds" )
+# saveRDS(svm1,"fit_objects/results_svm1.rds" )
+results_xgb1 <- readRDS("fit_objects/results_xgb1.rds")
+results_rf1 <- readRDS("fit_objects/results_rf1.rds")
+results_svm1 <- readRDS("fit_objects/results_svm1.rds")
+mod_list <- list("rf1" = results_rf1, "xgb1"= results_xgb1, "svm1"= results_svm1)
+res <- map_dfr(mod_list, .f =  ~(.$accuracy) ) 
+```
+
+```{r, echo=F, message=F, warning=F}
+# write_csv(res, "assessment_snacks_te/model_selection_results.csv")
+res <- read_csv("assessment_snacks_te/model_selection_results.csv")
+```
+
+```{r, echo=F}
+kable(res , "latex", booktabs = T) %>%
+  kable_styling(latex_options = c("striped"), font_size=9)
+```
+
+Nice :) I'll continute with xgboost and random forest for prediction.
+
+
+## Nueral Network 
+
+I'll **briefly** summarize what I did with the networks, and you can see **everything** in the jupyter notebook.
+
+I built:
+
+- CNN neural with only the snack's images.
+- Combined Neural Network - images and final numerical data (with the features I created at all stages - including hashwords)
+- Neural Network only with the final numerical data (no images)  
+
+Summarise Results:  
+
+- The images alone yielded an accuracy of ~ 60 percent on the test set.
+- The images + data yielded an accuracy of ~ 93 percent.
+- The data alone yielded an accuracy of about ~ 93.
+
+**Conclusion:** - using images **probably** don't yield higher accuracy, and don't contribute much to the prediction.
+I'll note that perhaps smarter network construction and proper handling of both types of data would probably have yielded better results.
+
+The architecture of the combined neural network I built:
+```{r,out.width = '60%', fig.align = "center", echo=F}
+knitr::include_graphics("plots/comb_model_diagram.png")
+```
+
+*I highly recommend looking at the jupyter notebook to see the complete code with which I built the network.*
+
+Notes: For building the networks, the validation I used was the same data as `snacks_te`. A **better way** was to take 0.8 from the rest of the train (ie our `snacks_tr`) and leave another 0.2 for validation. Then, **after** building the network - check its performance on `snacks_te` (as I did in the models in  R). I didn't have time to make changes due to a very very long run time. **However**, the train error and the validation error have been pretty close in the last epochs so I am less afraid of overfitting.
+
+**However, I decided to try and submit the predictions from the model that combines the images and other features.**  
+
+
+## Building the Final Models for Prediction
+
+Like I said, I'll submit predictions from my 3 best models - both xgboost combinations and the random forest model.
+
+```{r, eval = F}
+food_test_final_model <- full_features(food_test_initial, is_test = T)
+food_train_final_model <- full_features(food_train_initial)
+```
+
+```{r, echo=F, eval=F}
+# write.csv(food_train_final_model, "final_data/train_to_predict.csv", row.names = F)
+food_train_final_model <- read.csv("final_data/train_to_predict.csv")
+# write.csv(food_test_final_model, "final_data/test_to_predict.csv", row.names = F)
+food_test_final_model <- read.csv("final_data/test_to_predict.csv")
+```
+
+```{r, eval=F, echo=F}
+# arrange test set for network in python:
+test_data_to_predict_python <- bake(prep_to_network,food_test_final_model )
+write.csv(test_data_to_predict_python, "final_data/test_data_to_predict_python.csv", row.names = F)
+```
+
+```{r, echo=F, eval=F}
+final_rec_svm_rbf <-  recipe(category~. , data = food_train_final_model %>% select(-idx)  ) %>%
+  step_nzv(starts_with("nutr_"), freq_cut = 99/1)  %>%
+  step_meanimpute(household_serving_fulltext_num, starts_with("score_")) %>%
+  step_mutate(serving_size =trim_fun(serving_size,bottom = T)) %>%
+  step_mutate(household_serving_fulltext_num =trim_fun(household_serving_fulltext_num,bottom = T)) %>%
+  step_mutate_at(starts_with("nutr_"),fn =  trim_fun) %>%
+  step_zv(all_numeric()) %>%
+  step_normalize(all_numeric()) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_upsample(category, over_ratio = 1, seed= 123) 
+
+final_rec_rf_xgb <-  recipe(category~. , data = food_train_final_model %>% select(-idx) ) %>%
+  step_nzv(starts_with("nutr_"), freq_cut = 99/1)  %>%
+  step_rm(starts_with("score_")) %>%
+  step_meanimpute(household_serving_fulltext_num) %>%
+  step_mutate(serving_size =trim_fun(serving_size,bottom = T)) %>%
+  step_mutate(household_serving_fulltext_num =trim_fun(household_serving_fulltext_num,bottom = T)) %>%
+  step_mutate_at(starts_with("nutr_"),fn =  trim_fun) %>%
+  step_zv(all_numeric()) %>%
+  step_normalize(all_numeric(), -starts_with("score"), -starts_with("brnd_"),
+                 -starts_with("descr"), -starts_with("ingrd_")) %>%
+  step_unknown(all_nominal(), -all_outcomes()) %>%
+  step_other(all_nominal(), other = "other1", threshold = 0.01) %>%
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes(), one_hot = FALSE) %>% 
+  step_upsample(category, over_ratio = 1, seed= 123) 
+```
+
+
+
+```{r, eval=F}
+build_final_model <- function(rec, model)  {
+  final_prep = prep(rec, food_train_final_model) # prep 
+  train_baked = bake(final_prep, food_train_final_model) # bake
+  test_baked = bake(final_prep, food_test_final_model)  
+  
+  fit_final_mod = model %>%  fit (category ~., data = train_baked) # fit
+  pred_test = fit_final_mod %>%
+    predict(new_data = test_baked, type = "class") %>%
+    mutate(idx = food_test_final_model$idx)
+  
+  return(list( "results" = pred_test, fit = fit_final_mod ))
+}
+```
+
+**First Model: XGboost 1**
+
+```{r, eval = F}
+fit_xgb1  <- build_final_model(final_rec_rf_xgb ,final_mod_xgb_1)
+fit_xgb1$results %>%select(idx, .pred_class) %>%  write_csv("model101.csv")
+```
+
+**Second Model:Random Forest 1**
+```{r, eval=F}
+fit_rf1 <- build_final_model(final_rec_rf_xgb ,final_mod_rf_1)
+fit_rf1$results %>% select(idx, .pred_class) %>%  write_csv("model102.csv")
+```
+
+**Third Model: Neural Network**
+
+```{r, eval=F}
+results_nn  <- read.csv("final_nn_preds_03.csv")
+results_nn %>% arrange(idx) %>%
+  select(idx, Prediction) %>%  rename(".pred_class" = Prediction) %>%
+  write_csv("model103.csv")
+```
+
+```{r, eval=F, echo=F}
+# saveRDS(fit_xgb1 , "saved_models/fit_xgb1.csv")
+# saveRDS(fit_rf1 , "saved_models/fit_rf1.csv")
+```
+
+## General Comments:
+
+  - I could at any stage move forward with the ideal recipe for each model, but due to considerations of running time, I decided not to do so.
+  - It is clear to me that it is not necessarily correct to make the decisions editively. So I tried to combine previous steps even after that. 
+  - I could add another stage to take care of feature selection for the final model  - I didn't do that because anyway the models I chose already know how to give more weights to better features and fewer weights for not good features.
+  
+
+  
