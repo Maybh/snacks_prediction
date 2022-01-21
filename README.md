@@ -1,4 +1,4 @@
-# snacks_prediction
+# Snack's Prediction Project
 
 This project is my final assignment of 'DSApps' course in TLV university which got the highest classification accuracy. 
 The goal was to classify snack's category using structured (mainly text features) and unstrctured (images) data.
